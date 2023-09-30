@@ -2,7 +2,7 @@ import numpy as np
 import pandas as pd
 
 
-def main():
+def main() -> None:
     print("Loading datasets...")
     polity_df = pd.read_excel("datasets/Polity5.xls")
     economic_df = pd.read_excel("datasets/IMFInvestmentandCapitalStockDataset2021.xlsx", sheet_name="Dataset")
@@ -26,7 +26,7 @@ def main():
     df["gov_type"] = np.select(gov_conditions, gov_options)
 
     print("Exporting to datasets/MergedDataset-v1.csv")
-    df.to_csv("datasets/MergedDataset-v1.csv")
+    df.to_csv("datasets/MergedDataset-v1.csv", index=False)
     print("(rows, columns):", df.shape)
 
 

@@ -1,6 +1,13 @@
 import numpy as np
 import pandas as pd
 from colorama import Fore, Style
+from typing import Optional
+
+
+def log_error(message: str):
+    file = open("error.log", "a")
+    file.write(message + "\n")
+    file.close()
 
 
 def main() -> None:
@@ -85,10 +92,27 @@ def main() -> None:
     print("Countries not in IMF: ", countries_not_in_economic)
     print("Countries not in Population: ", countries_not_in_population, Style.RESET_ALL)
 
-    print(Fore.GREEN + "Adding government type (gov_typ) column..." + Style.RESET_ALL)
+    print(Fore.GREEN + "Adding column: Government Type (gov_typ)..." + Style.RESET_ALL)
     gov_conditions = [(df["polity2"] > 5), (df["polity2"] < -5), (df["polity2"] >= -5) & (df["polity2"] <= 5)]
     gov_options = ["democ", "autoc", "anoc"]
     df["gov_type"] = np.select(gov_conditions, gov_options)
+
+    print(Fore.GREEN + "Adding column: Population (population)..." + Style.RESET_ALL)
+
+    def get_population(country: str, year: int) -> Optional[int]:
+        rows_df = population_df[population_df["Country Name"] == country]
+
+        # rows_df should only contain 1 row
+        if rows_df.shape[0] == 1:
+            return population_df[population_df["Country Name"] == country].iloc[0][str(year)]
+
+        log_error(f"[get_population] Country: '{country}', Year: '{year}', found {rows_df.shape[0]} rows")
+        return None
+
+    df["population"] = [get_population(country, year) for country, year in zip(df["country"], df["year"])]
+
+    print(Fore.GREEN + "Adding column: Constant-Dollar GDP 2017 per Capita (GDP_rppp_pc)..." + Style.RESET_ALL)
+    df["GDP_rppp_pc"] = [(gdp_rpp * 1_000_000_000) / population for gdp_rpp, population in zip(df["GDP_rppp"], df["population"])]
 
     print(Fore.GREEN + "Exporting to datasets/MergedDataset-v1.csv" + Style.RESET_ALL)
     df.to_csv("datasets/MergedDataset-v1.csv", index=False)

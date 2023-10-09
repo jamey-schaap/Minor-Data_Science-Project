@@ -28,9 +28,17 @@ class Axes:
             x: str | pd.Series,
             y: str | pd.Series | None = None,
             z: str | pd.Series | None = None,
-            df: pd.DataFrame | None = None) -> Axes:
+            df: pd.DataFrame | None = None,
+            y_required: bool = False,
+            z_required: bool = False) -> Axes:
         func_args = locals()
         func_args = {k: v for k, v in func_args.items() if v is not None and k in ("x", "y", "z")}
+
+        if y_required and func_args["y"] is None:
+            raise Exception("Argument 'y' is required (cannot be None)")
+
+        if z_required and func_args["z"] is None:
+            raise Exception("Argument 'z' is required (cannot be None)")
 
         if type(x) == pd.Series:
 
@@ -69,7 +77,7 @@ def plot_linear(
         df: pd.DataFrame | None = None,
         x_label: str | None = None,
         y_label: str | None = None) -> None:
-    axes = Axes.create(df=df, x=x, y=y)
+    axes = Axes.create(df=df, x=x, y=y, y_required=True)
 
     # x = x[x.index.isin(x.dropna().index)]
     # y = y[y.index.isin(y.dropna().index)]
@@ -97,7 +105,7 @@ def plot_exponential(
         df: pd.DataFrame | None = None,
         x_label: str | None = None,
         y_label: str | None = None) -> None:
-    axes = Axes.create(df=df, x=x, y=y)
+    axes = Axes.create(df=df, x=x, y=y, y_required=True)
 
     plt.scatter(x=axes.x, y=axes.y)
     plt.plot(axes.x, [math.pow(10, v) for v in axes.x], color="red")
@@ -115,7 +123,7 @@ def plot_logarithmic(
         df: pd.DataFrame | None = None,
         x_label: str | None = None,
         y_label: str | None = None) -> None:
-    axes = Axes.create(df=df, x=x, y=y)
+    axes = Axes.create(df=df, x=x, y=y, y_required=True)
 
     plt.scatter(axes.x, axes.y)
     axes.x = list(filter(lambda v: v > 0, axes.x))
@@ -134,7 +142,7 @@ def plot_polynomial(
         df: pd.DataFrame | None = None,
         x_label: str | None = None,
         y_label: str | None = None) -> None:
-    axes = Axes.create(df=df, x=x, y=y)
+    axes = Axes.create(df=df, x=x, y=y, y_required=True)
 
     plt.scatter(axes.x, axes.y)
 
@@ -175,7 +183,7 @@ def scatter_3d_plot(
         x_label: str | None = None,
         y_label: str | None = None,
         z_label: str | None = None) -> None:
-    axes = Axes.create(df=df, x=x, y=y, z=z)
+    axes = Axes.create(df=df, x=x, y=y, z=z, y_required=True, z_required=True)
 
     fig = plt.figure(figsize=(9, 6))
     ax = Axes3D(fig)

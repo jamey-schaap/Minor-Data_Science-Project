@@ -1,85 +1,5 @@
-import matplotlib.pyplot as plt
-import numpy as np
 import pandas as pd
-
-import utils
-
-
-def plot_2_y_axis(
-        df: pd.DataFrame,
-        country: str,
-        x_col_name: str,
-        y1_col_name: str,
-        y2_col_name: str,
-        x_label: str = "",
-        y1_label: str = "",
-        y2_label: str = "") -> None:
-    x_label = utils.create_label(x_col_name, x_label)
-    y1_label = utils.create_label(y1_col_name, y1_label)
-    y2_label = utils.create_label(y2_col_name, y2_label)
-
-    x = df[df["country"] == country][x_col_name]
-    y1 = df[df["country"] == country][y1_col_name]
-    y2 = df[df["country"] == country][y2_col_name]
-
-    fig, ax1 = plt.subplots()
-
-    color = "tab:blue"
-    ax1.set_xlabel(x_label)
-    ax1.set_ylabel(y1_label, color=color)
-    # ax1.set_ylim(np.nanmin(df[y1_col_name]), np.nanmax(df[y1_col_name]))
-    # ax1.set_ylim(-11, 11)  # Used for polity2 column
-    ax1.plot(x, y1, color=color)
-    ax1.tick_params(axis="y", labelcolor=color)
-
-    ax2 = ax1.twinx()
-
-    color = "tab:red"
-    ax2.set_ylabel(y2_label, color=color)
-    # ax2.set_ylim(np.nanmin(df[y2_col_name]), np.nanmax(df[y2_col_name]))
-    # ax2.set_ylim(0, np.nanmax(df[y2_col_name]))
-    ax2.plot(x, y2, color=color)
-    ax2.tick_params(axis="y", labelcolor=color)
-
-    plt.title(country)
-    fig.tight_layout()
-    plt.show()
-
-
-def plot_avg_per_year_2_y_axis(
-        df: pd.DataFrame,
-        y1_col_name: str,
-        y2_col_name: str,
-        title: str = "",
-        y1_label: str = "",
-        y2_label: str = "") -> None:
-    y1_label = utils.create_label(y1_col_name, y1_label)
-    y2_label = utils.create_label(y2_col_name, y2_label)
-
-    fig, ax1 = plt.subplots()
-
-    avg_pol2_ser = df.groupby(df["year"])[y1_col_name].mean()
-    color = "tab:blue"
-    ax1.set_xlabel("Year")
-    ax1.set_ylabel(y1_label, color=color)
-    # ax1.set_ylim(np.nanmin(df[y1_col_name]), np.nanmax(df[y1_col_name]))
-    ax1.set_ylim(-11, 11)  # Used for polity2 column
-    ax1.plot(avg_pol2_ser.index, avg_pol2_ser.values, color=color)
-    ax1.tick_params(axis="y", labelcolor=color)
-
-    ax2 = ax1.twinx()
-
-    avg_gdp_ser = df.groupby(df["year"])[y2_col_name].mean()
-    color = "tab:red"
-    ax2.set_ylabel(y2_label, color=color)
-    ax2.plot(avg_gdp_ser.index, avg_gdp_ser.values, color=color)
-    ax2.tick_params(axis="y", labelcolor=color)
-
-    if title != "":
-        plt.title(title)
-
-    fig.tight_layout()
-    plt.show()
+import graph_functions as gf
 
 
 def main() -> None:
@@ -87,35 +7,31 @@ def main() -> None:
     df = pd.read_csv("datasets/MergedDataset-v1.csv")
 
     print("Plotting...")
-    # plot_avg_per_year_2_y_axis(
-    #     df=df,
-    #     title="Avg. Polity 2 score vs constant-dollar GDP",
-    #     y1_col_name="polity2",
-    #     y1_label="Polity 2 score",
-    #     y2_col_name="GDP_rppp",
-    #     y2_label="Constant-dollar GDP (billions)")
+    avg_x_ser = df.groupby(df["year"])["durable"].mean()
+    avg_y_ser = df.groupby(df["year"])["GDP_rppp_pc"].mean()
+    gf.plot_linear(avg_x_ser, avg_y_ser)
 
-    # plot_2_y_axis(
-    #     df=df,
-    #     country="China",
-    #     x_col_name="year",
-    #     x_label="Year",
-    #     y1_col_name="polity2",
-    #     y1_label="Polity 2 score",
-    #     y2_col_name="GDP_rppp",
-    #     y2_label="Constant-dollar GDP (billions)"
-    # )
+    # gf.scatter_3d_plot(df,
+    #                 x="durable",
+    #                 y="polity2",
+    #                 z="GDP_rppp_pc",
+    #                 x_label="Years since regime change",
+    #                 y_label="Polity 2 score",
+    #                 z_label="GDP per capita")
 
-    # plot_2_y_axis(
-    #     df=df,
-    #     country="Venezuela",
-    #     x_col_name="year",
-    #     x_label="Year",
-    #     y1_col_name="durable",
-    #     y1_label="Years since regime change",
-    #     y2_col_name="GDP_rppp",
-    #     y2_label="Constant-dollar GDP (billions)"
-    # )
+    #          x                 y                 grouped by
+    # --------------------------------------------------------------
+    # avg | durable     | GDP_rppp_pc     | year
+    # avg | polity2     | GDP_rppp_pc     | year
+    # avg | GDP_rppp_pc | test            | grouped by year
+    # avg | durable     | test            | year
+    # avg | polity2     | test            | year
+
+    # gf.plot_linear(df["durable"], df["GDP_rppp_pc"])
+    # gf.plot_exponential(df["polity2"], df["GDP_rppp_pc"])
+    # gf.plot_logarithmic(df["durable"], df["GDP_rppp_pc"])
+    # gf.plot_polynomial(df["polity2"], df["GDP_rppp_pc"])
+    # gf.plot_normal_distribution(df["durable"])
 
 
 if __name__ == '__main__':

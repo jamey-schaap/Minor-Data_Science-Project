@@ -62,13 +62,26 @@ class Axes:
         return Axes.from_dict({k: df[v] for k, v in func_args.items()})
 
 
-def _set_labels(
+def _set_labels_plt(
         x_label: str | None = None,
         y_label: str | None = None) -> None:
     if x_label is not None:
         plt.xlabel(x_label)
     if y_label is not None:
         plt.ylabel(y_label)
+
+
+def _set_labels_ax3d(
+        ax: Axes3D,
+        x_label: str | None = None,
+        y_label: str | None = None,
+        z_label: str | None = None) -> None:
+    if x_label is not None:
+        ax.set_xlabel(x_label)
+    if y_label is not None:
+        ax.set_ylabel(y_label)
+    if z_label is not None:
+        ax.set_zlabel(z_label)
 
 
 def plot_linear(
@@ -79,20 +92,18 @@ def plot_linear(
         y_label: str | None = None) -> None:
     axes = Axes.create(df=df, x=x, y=y, y_required=True)
 
-    # x = x[x.index.isin(x.dropna().index)]
-    # y = y[y.index.isin(y.dropna().index)]
-    #
-    # plt.scatter(x, y)
-    # a, b = np.polyfit(x, y, 1)
-    # plt.plot(x, a * x + b)
-    #
-    # slope, intercept, r_value, p_value, std_err = sc.linregress(x, y)
-    # r_squared = r_value**2
+    x = x.dropna()
+    y = y.dropna()
+    x = x[x.index.isin(y.index)]
+    y = y[y.index.isin(x.index)]
+
+    slope, intercept, r_value, p_value, std_err = sc.linregress(x, y)
+    r_squared = r_value**2
 
     sns.regplot(x=axes.x, y=axes.y, line_kws={"color": "red"})
     # scatter_kws={"color": "black"}, line_kws={"color": "red"}
 
-    _set_labels(x_label, y_label)
+    _set_labels_plt(x_label, y_label)
 
     sns.set_style('darkgrid', {"axed.grid": False})
     plt.tight_layout()
@@ -110,7 +121,7 @@ def plot_exponential(
     plt.scatter(x=axes.x, y=axes.y)
     plt.plot(axes.x, [math.pow(10, v) for v in axes.x], color="red")
 
-    _set_labels(x_label, y_label)
+    _set_labels_plt(x_label, y_label)
 
     sns.set_style('darkgrid', {"axed.grid": False})
     plt.tight_layout()
@@ -129,7 +140,7 @@ def plot_logarithmic(
     axes.x = list(filter(lambda v: v > 0, axes.x))
     plt.plot(axes.x, [math.log(v) for v in axes.x], color="red")
 
-    _set_labels(x_label, y_label)
+    _set_labels_plt(x_label, y_label)
 
     sns.set_style('darkgrid', {"axed.grid": False})
     plt.tight_layout()
@@ -150,7 +161,7 @@ def plot_polynomial(
     polynomial = np.poly1d(coefficients)
     plt.plot(axes.x, polynomial(axes.x), color="red")
 
-    _set_labels(x_label, y_label)
+    _set_labels_plt(x_label, y_label)
 
     sns.set_style('darkgrid', {"axed.grid": False})
     plt.tight_layout()
@@ -167,7 +178,7 @@ def plot_normal_distribution(
     sd = x.std()
     plt.plot(x, sc.norm.pdf(axes.x, mean, sd), label=f"μ: {mean}, σ: {sd}")
 
-    _set_labels(x_label)
+    _set_labels_plt(x_label)
 
     sns.set_style('darkgrid', {"axed.grid": False})
     plt.legend()
@@ -192,12 +203,7 @@ def scatter_3d_plot(
     cmap = ListedColormap(sns.color_palette("husl", 256).as_hex())
     scat = ax.scatter(axes.x, axes.y, axes.z, c=axes.y, marker='o', cmap=cmap, alpha=1)
 
-    if x_label is not None:
-        ax.set_xlabel(x_label)
-    if y_label is not None:
-        ax.set_ylabel(y_label)
-    if z_label is not None:
-        ax.set_zlabel(z_label)
+    _set_labels_ax3d(ax, x_label, y_label, z_label)
 
     sns.set_style('darkgrid', {"axed.grid": False})
     plt.legend(*scat.legend_elements(), bbox_to_anchor=(1.05, 1), loc=2)

@@ -22,9 +22,8 @@ class Row:
 
 
 def log_error(message: str):
-    file = open("error.log", "a")
-    file.write(message + "\n")
-    file.close()
+    with open("error.log", "a") as file:
+        file.write(message + "\n")
 
 
 def main() -> None:
@@ -33,6 +32,7 @@ def main() -> None:
     economic_df = pd.read_excel("datasets/IMFInvestmentandCapitalStockDataset2021.xlsx", sheet_name="Dataset")
     population_df = pd.read_excel("datasets/API_SP.POP.TOTL_DS2_en_excel_v2_5871620.xls", sheet_name="Data")
 
+    print(Fore.GREEN + "Selecting rows where (1960 <= year <= 2018)..." + Style.RESET_ALL)
     polity_df = polity_df[
         (polity_df["year"] >= 1960)
         & (polity_df["year"] <= 2018)]
@@ -110,6 +110,15 @@ def main() -> None:
     df_countries = economic_df["country"].unique()
     countries_not_in_population = np.setdiff1d(df_countries, population_countries)
 
+    print(Fore.GREEN + "Dropping unused columns..." + Style.RESET_ALL)
+    cols_to_drop = np.array(("cyear", "ccode", "scode", "flag", "fragment", "xrreg", "xrcomp", "xropen","xconst",
+                             "parreg", "parcomp", "exrec", "exconst", "polcomp", "prior", "emonth", "eday", "eyear",
+                             "eprec", "interim", "bmonth", "bday", "byear", "bprec", "post", "change", "d5", "sf",
+                             "regtrans", "isocode", "ifscode", "igov_n", "kgov_n", "ipriv_n", "kpriv_n", "kppp_n",
+                             "GDP_n"))
+    df = df.drop(columns=cols_to_drop)
+    print(Fore.YELLOW + "Columns dropped: ", cols_to_drop, Style.RESET_ALL)
+
     print(Fore.YELLOW + "Countries not in Polity5: ", countries_not_in_polity)
     print("Countries not in IMF: ", countries_not_in_economic)
     print("Countries not in Population: ", countries_not_in_population, Style.RESET_ALL)
@@ -120,7 +129,6 @@ def main() -> None:
     df["gov_type"] = np.select(gov_conditions, gov_options)
 
     print(Fore.GREEN + "Adding column: Population (population)..." + Style.RESET_ALL)
-
     def get_population(country: str, year: int) -> Optional[int]:
         rows_df = population_df[population_df["Country Name"] == country]
 
@@ -170,6 +178,11 @@ def main() -> None:
         in zip(
             shifted_df["country"], shifted_df["year"], shifted_df["GDP_rppp_pc"],
             df["country"], df["year"], df["GDP_rppp_pc"])]
+
+    print(Fore.GREEN + "Selecting rows where (year > 1960)..." + Style.RESET_ALL)
+    # Since "annual_gdp_rppp_pc_growth" and "durable_changed" cannot be calculated from years before 1961,
+    # given the data of our current datasets.
+    df = df[df["year"] > 1960]
 
     print(Fore.GREEN + "Exporting to datasets/MergedDataset-v1.csv" + Style.RESET_ALL)
     df.to_csv("datasets/MergedDataset-v1.csv", index=False)

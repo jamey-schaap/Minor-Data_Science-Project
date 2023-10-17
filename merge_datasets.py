@@ -1,7 +1,7 @@
 import numpy as np
 import pandas as pd
 from colorama import Fore, Style
-from typing import Optional
+from typing import Optional, Callable
 from dataclasses import dataclass
 
 
@@ -111,7 +111,7 @@ def main() -> None:
     countries_not_in_population = np.setdiff1d(df_countries, population_countries)
 
     print(Fore.GREEN + "Dropping unused columns..." + Style.RESET_ALL)
-    cols_to_drop = np.array(("cyear", "ccode", "scode", "flag", "fragment", "xrreg", "xrcomp", "xropen","xconst",
+    cols_to_drop = np.array(("cyear", "ccode", "scode", "flag", "fragment", "xrreg", "xrcomp", "xropen", "xconst",
                              "parreg", "parcomp", "exrec", "exconst", "polcomp", "prior", "emonth", "eday", "eyear",
                              "eprec", "interim", "bmonth", "bday", "byear", "bprec", "post", "change", "d5", "sf",
                              "regtrans", "isocode", "ifscode", "igov_n", "kgov_n", "ipriv_n", "kpriv_n", "kppp_n",
@@ -147,13 +147,17 @@ def main() -> None:
     print(Fore.GREEN + "Adding column: Sum of investment (sum_invest)..." + Style.RESET_ALL)
     df["sum_invest"] = df["igov_rppp"] + df["kgov_rppp"] + df["ipriv_rppp"] + df["kpriv_rppp"] + df["ippp_rppp"] + df["kppp_rppp"]
 
-    print(Fore.GREEN + "Adding column: Durable changed (durable_changed)..." + Style.RESET_ALL)
-    def calculate_durable_changed(prev_row: Row, cur_row: Row):
-        if cur_row.country == prev_row.country and cur_row.year - 1 == prev_row.year:
-            return cur_row.durable - prev_row.durable == 0
-        return None
-    shifted_df = df.shift(1)
+    def calculate_field[T](calculation: Callable[[Row, Row], T]) -> Callable[[Row, Row], Optional[T]]:
+        def wrapper(prev_row: Row, cur_row: Row):
+            if cur_row.country == prev_row.country and cur_row.year - 1 == prev_row.year:
+                return calculation(prev_row, cur_row)
+            return None
 
+        return wrapper
+
+    print(Fore.GREEN + "Adding column: Durable changed (durable_changed)..." + Style.RESET_ALL)
+    shifted_df = df.shift(1)
+    calculate_durable_changed = calculate_field(lambda prev_row, cur_row: cur_row.durable - prev_row.durable == 0)
     # True when durable has changed back to 0.
     df["durable_changed"] = [
         calculate_durable_changed(
@@ -165,11 +169,7 @@ def main() -> None:
             df["country"], df["year"], df["durable"])]
 
     print(Fore.GREEN + "Adding column: Annual GDP per capita growth (anual_gdp_rppp_pc_growth)..." + Style.RESET_ALL)
-    def calculate_annual_gdp_growth(prev_row: Row, cur_row: Row):
-        if cur_row.country == prev_row.country and cur_row.year - 1 == prev_row.year:
-            return (cur_row.gdp_pc - prev_row.gdp_pc) / prev_row.gdp_pc * 100
-        return None
-
+    calculate_annual_gdp_growth = calculate_field(lambda prev_row, cur_row: (cur_row.gdp_pc - prev_row.gdp_pc) / prev_row.gdp_pc * 100)
     df["annual_gdp_rppp_pc_growth"] = [
         calculate_annual_gdp_growth(
             Row.create(country=prev_country, year=prev_year, gdp_pc=prev_gdp_pc),

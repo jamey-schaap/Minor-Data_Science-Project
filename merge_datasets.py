@@ -2,6 +2,23 @@ import numpy as np
 import pandas as pd
 from colorama import Fore, Style
 from typing import Optional
+from dataclasses import dataclass
+
+
+@dataclass
+class Row:
+    country: str
+    year: int
+    gdp_pc: Optional[float]
+    durable: Optional[int]
+
+    @staticmethod
+    def create(
+            country: str,
+            year: int,
+            gdp_pc: float | None = None,
+            durable: int | None = None):
+        return Row(country, year, gdp_pc, durable)
 
 
 def log_error(message: str):
@@ -123,8 +140,36 @@ def main() -> None:
     df["sum_invest"] = df["igov_rppp"] + df["kgov_rppp"] + df["ipriv_rppp"] + df["kpriv_rppp"] + df["ippp_rppp"] + df["kppp_rppp"]
 
     print(Fore.GREEN + "Adding column: Durable changed (durable_changed)..." + Style.RESET_ALL)
+    def calculate_durable_changed(prev_row: Row, cur_row: Row):
+        if cur_row.country == prev_row.country and cur_row.year - 1 == prev_row.year:
+            return cur_row.durable - prev_row.durable == 0
+        return None
+    shifted_df = df.shift(1)
+
     # True when durable has changed back to 0.
-    df["durable_changed"] = df["durable"] - df.shift(1)["durable"] == 0
+    df["durable_changed"] = [
+        calculate_durable_changed(
+            Row.create(country=prev_country, year=prev_year, durable=prev_durable),
+            Row.create(country=cur_country, year=cur_year, durable=cur_durable))
+        for prev_country, prev_year, prev_durable, cur_country, cur_year, cur_durable
+        in zip(
+            shifted_df["country"], shifted_df["year"], shifted_df["durable"],
+            df["country"], df["year"], df["durable"])]
+
+    print(Fore.GREEN + "Adding column: Annual GDP per capita growth (anual_gdp_rppp_pc_growth)..." + Style.RESET_ALL)
+    def calculate_annual_gdp_growth(prev_row: Row, cur_row: Row):
+        if cur_row.country == prev_row.country and cur_row.year - 1 == prev_row.year:
+            return (cur_row.gdp_pc - prev_row.gdp_pc) / prev_row.gdp_pc * 100
+        return None
+
+    df["annual_gdp_rppp_pc_growth"] = [
+        calculate_annual_gdp_growth(
+            Row.create(country=prev_country, year=prev_year, gdp_pc=prev_gdp_pc),
+            Row.create(country=cur_country, year=cur_year, gdp_pc=cur_gdp_pc))
+        for prev_country, prev_year, prev_gdp_pc, cur_country, cur_year, cur_gdp_pc
+        in zip(
+            shifted_df["country"], shifted_df["year"], shifted_df["GDP_rppp_pc"],
+            df["country"], df["year"], df["GDP_rppp_pc"])]
 
     print(Fore.GREEN + "Exporting to datasets/MergedDataset-v1.csv" + Style.RESET_ALL)
     df.to_csv("datasets/MergedDataset-v1.csv", index=False)

@@ -122,6 +122,10 @@ def main() -> None:
     print(Fore.GREEN + "Adding column: Sum of investment (sum_invest)..." + Style.RESET_ALL)
     df["sum_invest"] = df["igov_rppp"] + df["kgov_rppp"] + df["ipriv_rppp"] + df["kpriv_rppp"] + df["ippp_rppp"] + df["kppp_rppp"]
 
+    print(Fore.GREEN + "Adding column: Durable changed (durable_changed)..." + Style.RESET_ALL)
+    # True when durable has changed back to 0.
+    df["durable_changed"] = df["durable"] - df.shift(1)["durable"] == 0
+
     print(Fore.GREEN + "Exporting to datasets/MergedDataset-v1.csv" + Style.RESET_ALL)
     df.to_csv("datasets/MergedDataset-v1.csv", index=False)
     print("(rows, columns):", df.shape)

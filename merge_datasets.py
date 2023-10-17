@@ -16,7 +16,12 @@ def main() -> None:
     economic_df = pd.read_excel("datasets/IMFInvestmentandCapitalStockDataset2021.xlsx", sheet_name="Dataset")
     population_df = pd.read_excel("datasets/API_SP.POP.TOTL_DS2_en_excel_v2_5871620.xls", sheet_name="Data")
 
-    polity_df = polity_df[polity_df["year"] >= 1960]
+    polity_df = polity_df[
+        (polity_df["year"] >= 1960)
+        & (polity_df["year"] <= 2018)]
+    economic_df = economic_df[
+        (economic_df["year"] >= 1960)
+        & (economic_df["year"] <= 2018)]
 
     print(Fore.GREEN + "Removing conflicting rows..." + Style.RESET_ALL)
     # USSR started in December 1922
@@ -113,6 +118,9 @@ def main() -> None:
 
     print(Fore.GREEN + "Adding column: Constant-Dollar GDP 2017 per Capita (GDP_rppp_pc)..." + Style.RESET_ALL)
     df["GDP_rppp_pc"] = [(gdp_rpp * 1_000_000_000) / population for gdp_rpp, population in zip(df["GDP_rppp"], df["population"])]
+
+    print(Fore.GREEN + "Adding column: Sum of investment (sum_invest)..." + Style.RESET_ALL)
+    df["sum_invest"] = df["igov_rppp"] + df["kgov_rppp"] + df["ipriv_rppp"] + df["kpriv_rppp"] + df["ippp_rppp"] + df["kppp_rppp"]
 
     print(Fore.GREEN + "Exporting to datasets/MergedDataset-v1.csv" + Style.RESET_ALL)
     df.to_csv("datasets/MergedDataset-v1.csv", index=False)

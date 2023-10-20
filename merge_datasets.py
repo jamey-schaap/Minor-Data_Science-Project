@@ -184,6 +184,10 @@ def main() -> None:
     # given the data of our current datasets.
     df = df[df["year"] > 1960]
 
+    drop_na_columns = ["polity2", "durable", "GDP_rppp_pc"]
+    print(Fore.GREEN + f"Dropping NA values in columns {drop_na_columns}..." + Style.RESET_ALL)
+    df = df.dropna(subset=drop_na_columns)
+
     print(Fore.GREEN + "Exporting to datasets/MergedDataset-v1.csv" + Style.RESET_ALL)
     df.to_csv("datasets/MergedDataset-v1.csv", index=False)
     print("(rows, columns):", df.shape)

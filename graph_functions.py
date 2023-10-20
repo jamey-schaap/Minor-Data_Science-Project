@@ -8,6 +8,8 @@ import scipy.stats as sc
 from mpl_toolkits.mplot3d import Axes3D
 from matplotlib.colors import ListedColormap
 from dataclasses import dataclass
+from sklearn.metrics import r2_score
+import matplotlib.patches as mpatches
 
 
 @dataclass
@@ -92,13 +94,12 @@ def plot_linear(
         y_label: str | None = None) -> None:
     axes = Axes.create(df=df, x=x, y=y, y_required=True)
 
-    x = x.dropna()
-    y = y.dropna()
-    x = x[x.index.isin(y.index)]
-    y = y[y.index.isin(x.index)]
-
     slope, intercept, r_value, p_value, std_err = sc.linregress(x, y)
-    r_squared = r_value**2
+    r_sqr = r_value**2
+
+    r_sqr_patch = mpatches.Patch(label=f"R-squared: {round(r_sqr, 3)}", color="none")
+    coeff_patch = mpatches.Patch(label=f"Pear. Coeff: {round(r_value, 3)}", color="none")
+    plt.legend(handles=[r_sqr_patch, coeff_patch])
 
     sns.regplot(x=axes.x, y=axes.y, line_kws={"color": "red"})
     # scatter_kws={"color": "black"}, line_kws={"color": "red"}
@@ -157,9 +158,17 @@ def plot_polynomial(
 
     plt.scatter(axes.x, axes.y)
 
-    coefficients = [5, -3, 2, -1]  # Coefficients for the polynomial 5x^3 - 3x^2 + 2x - 1
-    polynomial = np.poly1d(coefficients)
-    plt.plot(axes.x, polynomial(axes.x), color="red")
+    model = np.poly1d(np.polyfit(x, y, 3))
+    line = np.linspace(np.nanmin(x), np.nanmax(x), x.shape[0])
+    plt.plot(line, model(line), color="red", label="test")
+
+    patches = [
+        mpatches.Patch(label=f"Coeff-{idx}: {round(coeff, 3)}", color="none")
+        for idx, coeff in enumerate(model.coefficients)]
+    r_sqr = round(r2_score(y, model(x)), 3)
+    r_sqr_patch = mpatches.Patch(label=f"R-squared: {r_sqr}", color="none")
+    patches.insert(0, r_sqr_patch)
+    plt.legend(handles=patches)
 
     _set_labels_plt(x_label, y_label)
 

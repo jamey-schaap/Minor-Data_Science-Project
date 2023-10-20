@@ -40,13 +40,13 @@ def main() -> None:
     # GDP_rppp_pc outliers UAE, Qatar, maybe Kuwait
     # Sum_inves outlier China
 
-    # gf.plot_linear(
-    #     x=df[df["country"] == "China"]["durable"],
-    #     y=df[df["country"] == "China"]["GDP_rppp_pc"],
+    gf.plot_linear(
+        x=df["polity2"],
+        y=df["GDP_rppp_pc"],
         # x_label="GDP per capita (billions)",
         # x_label="Sum of investment data (billions)",
-        # y_label="Years since regime change"
-    # )
+        y_label="Years since regime change"
+    )
     # gf.plot_exponential(df["polity2"], df["GDP_rppp_pc"])
     # gf.plot_logarithmic(
     #     x=df["GDP_rppp_pc"],
@@ -54,7 +54,7 @@ def main() -> None:
     #     x_label="GDP per capita (billions)",
     #     y_label="Years since regime change"
     # )
-    # gf.plot_polynomial(df["polity2"], df["GDP_rppp_pc"])
+    # gf.plot_polynomial(df["durable"], df["GDP_rppp_pc"])
     # gf.plot_normal_distribution(df["durable"])
 
 

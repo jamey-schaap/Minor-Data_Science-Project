@@ -1,3 +1,38 @@
+from enum import StrEnum
+
+# Paths
+DATASETS_PATH = "datasets"
+MERGED_DATASET_PATH = f"{DATASETS_PATH}/MergedDataset-v1.csv"
+
+
+# Merged dataset column names
+class Cols(StrEnum):
+    COUNTRY = "country"
+    YEAR = "year"
+    GTYPE = "gov_type"
+    POL = "polity"
+    POL2 = "polity2"
+    DUR = "durable"
+    DUR_CH = "durable_changed"
+    GDP = "gdp_rppp"
+    GDP_PC = "gdp_rppp_pc"
+    GDP_PC_GR = "gdp_rppp_pc_growth"
+    INVEST = "sum_invest"
+    POP = "population"
+    IGOV = "igov_rppp"
+    KGOV = "kgov_rppp"
+    IPRIV = "ipriv_rppp"
+    KPRIV = "kpriv_rppp"
+    IPPP = "ippp_rppp"
+    KPPP = "kppp_rppp"
+
+
+# Normalization
+A = 0
+B = 10
+
+
+# Country conversion
 POLITY_COUNTRY_CONVERSIONS = {
     "Myanmar (Burma)": "Myanmar",
     "Gambia": "Gambia, The",

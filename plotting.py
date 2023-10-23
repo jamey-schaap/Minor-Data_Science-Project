@@ -1,10 +1,11 @@
 import pandas as pd
 from modules import graph_functions as gf
+from configuration import MERGED_DATASET_PATH, Cols
 
 
 def main() -> None:
     print("Loading dataset...")
-    df = pd.read_csv("datasets/MergedDataset-v1.csv")
+    df = pd.read_csv(MERGED_DATASET_PATH)
 
     print("Plotting...")
     # avg_x_ser = df.groupby(df["year"])["GDP_rppp_pc"].mean()
@@ -27,8 +28,8 @@ def main() -> None:
     #                 z_label="GDP per capita")
 
     gf.plot_linear(
-        x=df["durable"],
-        y=df["GDP_rppp_pc"],
+        x=df[Cols.DUR],
+        y=df[Cols.GDP_PC],
         # y=pd.Series([math.log(v) for v in df["GDP_rppp_pc"]]),
         # x_label="GDP per capita (billions)",
         # x_label="Sum of investment data (billions)",

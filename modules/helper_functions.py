@@ -4,10 +4,7 @@ import numpy as np
 import pandas as pd
 from typing import Optional, Callable
 from dataclasses import dataclass
-
-A = 0
-B = 10
-
+from configuration import A, B
 
 @dataclass
 class Row:

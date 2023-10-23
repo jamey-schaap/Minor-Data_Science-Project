@@ -3,13 +3,24 @@ from functools import reduce
 from modules import logger
 from modules.helper_functions import *
 from configuration import *
+from tqdm import tqdm
 
 
 def main() -> None:
     print(Fore.GREEN + "Loading datasets..." + Style.RESET_ALL)
-    polity_df = pd.read_excel(f"{DATASETS_PATH}/Polity5.xls")
-    economic_df = pd.read_excel(f"{DATASETS_PATH}/IMFInvestmentandCapitalStockDataset2021.xlsx", sheet_name="Dataset")
-    population_df = pd.read_excel(f"{DATASETS_PATH}/API_SP.POP.TOTL_DS2_en_excel_v2_5871620.xls", sheet_name="Data")
+    with tqdm(total=3, ncols=100) as pbar:
+        pbar.set_description("Loading 'Polity5' dataset")
+        polity_df = pd.read_excel(f"{DATASETS_PATH}/Polity5.xls")
+        pbar.update(1)
+
+        pbar.set_description("Loading 'IMF' dataset")
+        economic_df = pd.read_excel(f"{DATASETS_PATH}/IMFInvestmentandCapitalStockDataset2021.xlsx", sheet_name="Dataset")
+        pbar.update(1)
+
+        pbar.set_description("Loading 'Population' dataset")
+        population_df = pd.read_excel(f"{DATASETS_PATH}/API_SP.POP.TOTL_DS2_en_excel_v2_5871620.xls", sheet_name="Data")
+        pbar.update(1)
+    pbar.close()
 
     print(Fore.GREEN + "Selecting rows where (1960 <= year <= 2018)..." + Style.RESET_ALL)
     polity_df = polity_df[
@@ -82,7 +93,14 @@ def main() -> None:
         logger.log_error(f"[get_population] Country: '{country}', Year: '{year}', found {rows_df.shape[0]} rows")
         return None
 
-    df[Cols.POP] = [get_population(country, year) for country, year in zip(df[Cols.COUNTRY], df[Cols.YEAR])]
+    df[Cols.POP] = [
+        get_population(country, year)
+        for country, year
+        in tqdm(
+            zip(df[Cols.COUNTRY], df[Cols.YEAR]),
+            total=len(df[Cols.COUNTRY]),
+            ncols=100,
+            desc="Processing")]
 
     print(Fore.GREEN + "Adding column: Constant-Dollar GDP 2017 per Capita (GDP_rppp_pc)..." + Style.RESET_ALL)
     df[Cols.GDP_PC] = [(gdp_rpp * 1_000_000_000) / population for gdp_rpp, population in zip(df[Cols.GDP], df[Cols.POP])]

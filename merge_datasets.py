@@ -1,63 +1,8 @@
-import math
-
-import numpy as np
-import pandas as pd
 from colorama import Fore, Style
-from typing import Optional, Callable
-from dataclasses import dataclass
 from functools import reduce
-
-A = 0
-B = 10
-
-
-def normalize(x: int | float, x_min: int | float, x_max: int | float) -> float:
-    return A + (((x - x_min) * (B - A)) / (x_max - x_min))
-
-
-def normalize_column(df: pd.DataFrame, column_name: str) -> pd.DataFrame:
-    result_df = df
-
-    column_min = np.nanmin(result_df[column_name])
-    column_max = np.nanmax(result_df[column_name])
-    result_df[f"norm_{column_name}"] = [normalize(x, column_min, column_max) for x in result_df[column_name]]
-
-    return result_df
-
-
-def log_column(df: pd.DataFrame, column_name: str) -> pd.DataFrame:
-    result_df = df
-    result_df[f"log_{column_name}"] = [math.log(x) for x in result_df[column_name]]
-    return result_df
-
-
-@dataclass
-class Row:
-    country: str
-    year: int
-    gdp_pc: Optional[float]
-    durable: Optional[int]
-
-    @staticmethod
-    def create(
-            country: str,
-            year: int,
-            gdp_pc: float | None = None,
-            durable: int | None = None):
-        return Row(country, year, gdp_pc, durable)
-
-
-def calculate_from_prev_row[T](calculation: Callable[[Row, Row], T]) -> Callable[[Row, Row], Optional[T]]:
-    def wrapper(prev_row: Row, cur_row: Row):
-        if cur_row.country == prev_row.country and cur_row.year - 1 == prev_row.year:
-            return calculation(prev_row, cur_row)
-        return None
-    return wrapper
-
-
-def log_error(message: str):
-    with open("error.log", "a") as file:
-        file.write(message + "\n")
+from modules import logger
+from modules.helper_functions import *
+from modules.country_conversions import *
 
 
 def main() -> None:
@@ -86,46 +31,8 @@ def main() -> None:
                                    & (polity_df["scode"] == "YUG")].index)
 
     print(Fore.GREEN + "Replacing country names..." + Style.RESET_ALL)
-    polity_country_conversions = {
-        "Myanmar (Burma)": "Myanmar",
-        "Gambia": "Gambia, The",
-        "Cape Verde": "Cabo Verde",
-        "Bosnia": "Bosnia and Herzegovina",
-        "Timor Leste": "Timor-Leste",
-        "UAE": "United Arab Emirates",
-        "Gran Colombia": "Colombia",
-        "Cote D'Ivoire": "Côte d'Ivoire",
-        "Ivory Coast": "Côte d'Ivoire",
-        "USSR": "Russia",
-        "Congo Brazzaville": "Congo, Republic of",
-        "Congo-Brazzaville": "Congo, Republic of",
-        "Congo Kinshasa": "Congo, Democratic Republic of the",
-        "Kyrgyzstan": "Kyrgyz Republic",
-        "Laos": "Lao P.D.R.",
-        "Swaziland": "Eswatini",
-        "United Province CA": "Canada",
-        "Serbia and Montenegro": "Serbia"
-    }
-    population_country_conversions = {
-        "Cote d'Ivoire": "Côte d'Ivoire",
-        "Russian Federation": "Russia",
-        "Congo, Rep.": "Congo, Republic of",
-        "Congo, Dem. Rep.": "Congo, Democratic Republic of the",
-        "Lao PDR": "Lao P.D.R.",
-        "Czechia": "Czech Republic",
-        "Egypt, Arab Rep.": "Egypt",
-        "Hong Kong SAR, China": "Hong Kong SAR",
-        "Iran, Islamic Rep.": "Iran",
-        "Macao SAR, China": "Macao SAR",
-        "Micronesia, Fed. Sts.": "Micronesia",
-        "Syrian Arab Republic": "Syria",
-        "Turkiye": "Turkey",
-        "Venezuela, RB": "Venezuela",
-        "Yemen, Rep.": "Yemen"
-    }
-
-    polity_df = polity_df.replace(polity_country_conversions)
-    population_df = population_df.replace(population_country_conversions)
+    polity_df = polity_df.replace(POLITY_COUNTRY_CONVERSIONS)
+    population_df = population_df.replace(POPULATION_COUNTRY_CONVERSIONS)
 
     print(Fore.GREEN + "Removing rows with non-matching country names..." + Style.RESET_ALL)
     polity_countries = polity_df["country"].unique()
@@ -171,7 +78,7 @@ def main() -> None:
         if rows_df.shape[0] == 1:
             return population_df[population_df["Country Name"] == country].iloc[0][str(year)]
 
-        log_error(f"[get_population] Country: '{country}', Year: '{year}', found {rows_df.shape[0]} rows")
+        logger.log_error(f"[get_population] Country: '{country}', Year: '{year}', found {rows_df.shape[0]} rows")
         return None
 
     df["population"] = [get_population(country, year) for country, year in zip(df["country"], df["year"])]
@@ -236,4 +143,3 @@ def main() -> None:
 
 if __name__ == '__main__':
     main()
-

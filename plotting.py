@@ -1,6 +1,6 @@
 import pandas as pd
-import graph_functions as gf
-import math
+from modules import graph_functions as gf
+
 
 def main() -> None:
     print("Loading dataset...")

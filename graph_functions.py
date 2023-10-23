@@ -42,9 +42,9 @@ class Axes:
         if z_required and func_args["z"] is None:
             raise Exception("Argument 'z' is required (cannot be None)")
 
-        if type(x) == pd.Series:
+        if isinstance(x, pd.Series):
 
-            is_pd_ser = [type(v) == pd.Series for k, v in func_args.items()]
+            is_pd_ser = [isinstance(v, pd.Series) for k, v in func_args.items()]
 
             if False in is_pd_ser:
                 raise Exception("'x' (, 'y' and 'z') should be either a str or pd.Series and have the same type.")
@@ -53,7 +53,7 @@ class Axes:
 
             return Axes.from_dict(func_args)
 
-        is_str_ser = [type(v) == str for k, v in func_args.items()]
+        is_str_ser = [isinstance(x, str) for k, v in func_args.items()]
         if False in is_str_ser:
             raise Exception("'x' (, 'y' and 'z') should be either a str or pd.Series and have the same type.")
 

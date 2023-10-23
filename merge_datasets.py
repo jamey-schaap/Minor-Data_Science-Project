@@ -1,8 +1,34 @@
+import math
+
 import numpy as np
 import pandas as pd
 from colorama import Fore, Style
 from typing import Optional, Callable
 from dataclasses import dataclass
+from functools import reduce
+
+A = 0
+B = 10
+
+
+def normalize(x: int | float, x_min: int | float, x_max: int | float) -> float:
+    return A + (((x - x_min) * (B - A)) / (x_max - x_min))
+
+
+def normalize_column(df: pd.DataFrame, column_name: str) -> pd.DataFrame:
+    result_df = df
+
+    column_min = np.nanmin(result_df[column_name])
+    column_max = np.nanmax(result_df[column_name])
+    result_df[f"norm_{column_name}"] = [normalize(x, column_min, column_max) for x in result_df[column_name]]
+
+    return result_df
+
+
+def log_column(df: pd.DataFrame, column_name: str) -> pd.DataFrame:
+    result_df = df
+    result_df[f"log_{column_name}"] = [math.log(x) for x in result_df[column_name]]
+    return result_df
 
 
 @dataclass
@@ -19,6 +45,14 @@ class Row:
             gdp_pc: float | None = None,
             durable: int | None = None):
         return Row(country, year, gdp_pc, durable)
+
+
+def calculate_from_prev_row[T](calculation: Callable[[Row, Row], T]) -> Callable[[Row, Row], Optional[T]]:
+    def wrapper(prev_row: Row, cur_row: Row):
+        if cur_row.country == prev_row.country and cur_row.year - 1 == prev_row.year:
+            return calculation(prev_row, cur_row)
+        return None
+    return wrapper
 
 
 def log_error(message: str):
@@ -129,6 +163,7 @@ def main() -> None:
     df["gov_type"] = np.select(gov_conditions, gov_options)
 
     print(Fore.GREEN + "Adding column: Population (population)..." + Style.RESET_ALL)
+
     def get_population(country: str, year: int) -> Optional[int]:
         rows_df = population_df[population_df["Country Name"] == country]
 
@@ -144,20 +179,16 @@ def main() -> None:
     print(Fore.GREEN + "Adding column: Constant-Dollar GDP 2017 per Capita (GDP_rppp_pc)..." + Style.RESET_ALL)
     df["GDP_rppp_pc"] = [(gdp_rpp * 1_000_000_000) / population for gdp_rpp, population in zip(df["GDP_rppp"], df["population"])]
 
+    set_to_default_columns = ["igov_rppp", "kgov_rppp", "ipriv_rppp", "kpriv_rppp", "ippp_rppp", "kppp_rppp"]
+    print(Fore.GREEN + f"Setting default values where NaN for columns {set_to_default_columns}..." + Style.RESET_ALL)
+    df[set_to_default_columns] = df[set_to_default_columns].fillna(0)
+
     print(Fore.GREEN + "Adding column: Sum of investment (sum_invest)..." + Style.RESET_ALL)
     df["sum_invest"] = df["igov_rppp"] + df["kgov_rppp"] + df["ipriv_rppp"] + df["kpriv_rppp"] + df["ippp_rppp"] + df["kppp_rppp"]
 
-    def calculate_field[T](calculation: Callable[[Row, Row], T]) -> Callable[[Row, Row], Optional[T]]:
-        def wrapper(prev_row: Row, cur_row: Row):
-            if cur_row.country == prev_row.country and cur_row.year - 1 == prev_row.year:
-                return calculation(prev_row, cur_row)
-            return None
-
-        return wrapper
-
     print(Fore.GREEN + "Adding column: Durable changed (durable_changed)..." + Style.RESET_ALL)
     shifted_df = df.shift(1)
-    calculate_durable_changed = calculate_field(lambda prev_row, cur_row: cur_row.durable - prev_row.durable == 0)
+    calculate_durable_changed = calculate_from_prev_row(lambda prev_row, cur_row: cur_row.durable - prev_row.durable == 0)
     # True when durable has changed back to 0.
     df["durable_changed"] = [
         calculate_durable_changed(
@@ -168,9 +199,9 @@ def main() -> None:
             shifted_df["country"], shifted_df["year"], shifted_df["durable"],
             df["country"], df["year"], df["durable"])]
 
-    print(Fore.GREEN + "Adding column: Annual GDP per capita growth (anual_gdp_rppp_pc_growth)..." + Style.RESET_ALL)
-    calculate_annual_gdp_growth = calculate_field(lambda prev_row, cur_row: (cur_row.gdp_pc - prev_row.gdp_pc) / prev_row.gdp_pc * 100)
-    df["annual_gdp_rppp_pc_growth"] = [
+    print(Fore.GREEN + "Adding column: Annual GDP per capita growth (gdp_rppp_pc_growth)..." + Style.RESET_ALL)
+    calculate_annual_gdp_growth = calculate_from_prev_row(lambda prev_row, cur_row: (cur_row.gdp_pc - prev_row.gdp_pc) / prev_row.gdp_pc * 100)
+    df["gdp_rppp_pc_growth"] = [
         calculate_annual_gdp_growth(
             Row.create(country=prev_country, year=prev_year, gdp_pc=prev_gdp_pc),
             Row.create(country=cur_country, year=cur_year, gdp_pc=cur_gdp_pc))
@@ -180,13 +211,23 @@ def main() -> None:
             df["country"], df["year"], df["GDP_rppp_pc"])]
 
     print(Fore.GREEN + "Selecting rows where (year > 1960)..." + Style.RESET_ALL)
-    # Since "annual_gdp_rppp_pc_growth" and "durable_changed" cannot be calculated from years before 1961,
+    # Since "gdp_rppp_pc_growth" and "durable_changed" cannot be calculated from years before 1961,
     # given the data of our current datasets.
     df = df[df["year"] > 1960]
 
-    drop_na_columns = ["polity2", "durable", "GDP_rppp_pc"]
+    drop_na_columns = ["polity2", "durable", "GDP_rppp_pc", "gdp_rppp_pc_growth", "durable_changed"]
     print(Fore.GREEN + f"Dropping NA values in columns {drop_na_columns}..." + Style.RESET_ALL)
     df = df.dropna(subset=drop_na_columns)
+    df = df[df["sum_invest"] != 0]
+
+    log_columns = ["GDP_rppp_pc", "sum_invest"]
+    print(Fore.GREEN + f"Adding Math.Log columns for columns {log_columns}..." + Style.RESET_ALL)
+    df = reduce(log_column, log_columns, df)
+
+    columns_to_normalize = ["durable", "GDP_rppp_pc", "gdp_rppp_pc_growth", "polity2", "sum_invest"]
+    columns_to_normalize += map(lambda s: f"log_{s}", log_columns)
+    print(Fore.GREEN + f"Adding normalized columns (min: {A}, max: {B}) for columns {columns_to_normalize}..." + Style.RESET_ALL)
+    df = reduce(normalize_column, columns_to_normalize, df)
 
     print(Fore.GREEN + "Exporting to datasets/MergedDataset-v1.csv" + Style.RESET_ALL)
     df.to_csv("datasets/MergedDataset-v1.csv", index=False)

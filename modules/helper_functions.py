@@ -4,7 +4,7 @@ import numpy as np
 import pandas as pd
 from typing import Optional, Callable
 from dataclasses import dataclass
-from configuration import A, B
+from configuration import A, B, Cols, GOV_INSTABILITY_LOOKBACK_YEARS
 
 @dataclass
 class Row:
@@ -48,3 +48,6 @@ def calculate_from_prev_row[T](calculation: Callable[[Row, Row], T]) -> Callable
             return calculation(prev_row, cur_row)
         return None
     return wrapper
+
+def calculate_gov_instability(df: pd.DataFrame, country: str, year: int) -> int:
+    return len(df[(df[Cols.COUNTRY] == country) & (df[Cols.YEAR] < year) & (df[Cols.YEAR] >= year - GOV_INSTABILITY_LOOKBACK_YEARS) & (df[Cols.DUR] == 0)])

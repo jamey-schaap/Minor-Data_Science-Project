@@ -3,12 +3,13 @@ from functools import reduce
 from modules import logger
 from modules.helper_functions import *
 from configuration import *
+import json
 from tqdm import tqdm
 
 
 def main() -> None:
     print(Fore.GREEN + "Loading datasets..." + Style.RESET_ALL)
-    with tqdm(total=3, ncols=100) as pbar:
+    with tqdm(total=3, ncols=   100) as pbar:
         pbar.set_description("Loading 'Polity5' dataset")
         polity_df = pd.read_excel(f"{DATASETS_PATH}/Polity5.xls")
         pbar.update(1)
@@ -20,6 +21,11 @@ def main() -> None:
         pbar.set_description("Loading 'Population' dataset")
         population_df = pd.read_excel(f"{DATASETS_PATH}/API_SP.POP.TOTL_DS2_en_excel_v2_5871620.xls", sheet_name="Data")
         pbar.update(1)
+
+        with open(f"{DATASETS_PATH}/risk2023.json", "r") as f:
+            risk_json = json.load(f)
+            risk_df = pd.json_normalize(risk_json)
+
     pbar.close()
 
     print(Fore.GREEN + "Selecting rows where (1960 <= year <= 2018)..." + Style.RESET_ALL)
@@ -56,12 +62,27 @@ def main() -> None:
     polity_df = polity_df[~polity_df["country"].isin(countries_not_in_polity)]
     economic_df = economic_df[~economic_df["country"].isin(countries_not_in_economic)]
 
+    print(Fore.GREEN + "Adding column: Government instability (gov_instability)..." + Style.RESET_ALL)
+    polity_df[Cols.GOV_INSTABILITY] = [
+        calculate_gov_instability(polity_df, country, year)
+        for country, year
+        in tqdm(
+            zip(polity_df[Cols.COUNTRY], polity_df[Cols.YEAR]),
+            total=len(polity_df[Cols.COUNTRY]),
+            ncols=100,
+            desc="Processing")]
+
     print(Fore.GREEN + "Merging datasets..." + Style.RESET_ALL)
     df = pd.merge(polity_df, economic_df, how="inner", on=["country", "year"])
     df.columns = map(str.lower, df.columns)
 
     df_countries = economic_df["country"].unique()
     countries_not_in_population = np.setdiff1d(df_countries, population_countries)
+
+    df = pd.merge(df, risk_df, how="inner", on=["country"])
+
+    df[Cols.RISK_TEST_2023] = pd.to_numeric(df[Cols.RISK])
+    df.drop("risk", axis=1)
 
     print(Fore.GREEN + "Dropping unused columns..." + Style.RESET_ALL)
     cols_to_drop = np.array(("cyear", "ccode", "scode", "flag", "xrreg", "xrcomp", "xropen", "xconst",
@@ -105,27 +126,15 @@ def main() -> None:
     print(Fore.GREEN + "Adding column: Constant-Dollar GDP 2017 per Capita (GDP_rppp_pc)..." + Style.RESET_ALL)
     df[Cols.GDP_PC] = [(gdp_rpp * 1_000_000_000) / population for gdp_rpp, population in zip(df[Cols.GDP], df[Cols.POP])]
 
-    set_to_default_columns = [Cols.IGOV, Cols.KGOV, Cols.IPRIV, Cols.KPRIV, Cols.IPPP, Cols.KPPP]
+    set_to_default_columns = [Cols.IGOV, Cols.KGOV, Cols.IPRIV, Cols.KPRIV, Cols.IPPP, Cols.KPPP, Cols.FRAG]
     print(Fore.GREEN + f"Setting default values where NaN for columns {set_to_default_columns}..." + Style.RESET_ALL)
     df[set_to_default_columns] = df[set_to_default_columns].fillna(0)
 
     print(Fore.GREEN + "Adding column: Sum of investment (sum_invest)..." + Style.RESET_ALL)
     df[Cols.INVEST] = df[Cols.IGOV] + df[Cols.IPRIV] + df[Cols.IPPP]
 
-    print(Fore.GREEN + "Adding column: Durable changed (durable_changed)..." + Style.RESET_ALL)
-    shifted_df = df.shift(1)
-    calculate_durable_changed = calculate_from_prev_row(lambda prev_row, cur_row: cur_row.durable - prev_row.durable == 0)
-    # True when durable has changed back to 0.
-    df[Cols.DUR_CH] = [
-        calculate_durable_changed(
-            Row.create(country=prev_country, year=prev_year, durable=prev_durable),
-            Row.create(country=cur_country, year=cur_year, durable=cur_durable))
-        for prev_country, prev_year, prev_durable, cur_country, cur_year, cur_durable
-        in zip(
-            shifted_df[Cols.COUNTRY], shifted_df[Cols.YEAR], shifted_df[Cols.DUR],
-            df[Cols.COUNTRY], df[Cols.YEAR], df[Cols.DUR])]
-
     print(Fore.GREEN + "Adding column: Annual GDP per capita growth (gdp_rppp_pc_growth)..." + Style.RESET_ALL)
+    shifted_df = df.shift(1)
     calculate_annual_gdp_growth = calculate_from_prev_row(lambda prev_row, cur_row: (cur_row.gdp_pc - prev_row.gdp_pc) / prev_row.gdp_pc * 100)
     df[Cols.GDP_PC_GR] = [
         calculate_annual_gdp_growth(
@@ -141,23 +150,29 @@ def main() -> None:
     # given the data of our current datasets.
     df = df[df[Cols.YEAR] > 1960]
 
-    drop_na_columns = [Cols.POL2, Cols.DUR, Cols.DUR_CH, Cols.GDP_PC, Cols.GDP_PC_GR]
+    drop_na_columns = [Cols.POL2, Cols.DUR, Cols.GDP_PC, Cols.GDP_PC_GR]
     print(Fore.YELLOW + f"Dropping NA values in columns {drop_na_columns}..." + Style.RESET_ALL)
     df = df.dropna(subset=drop_na_columns)
     df = df[df[Cols.INVEST] != 0]
 
-    log_columns = [Cols.GDP, Cols.GDP_PC, Cols.INVEST]
+    log_columns = [Cols.GDP_PC, Cols.GDP, Cols.INVEST]
     print(Fore.GREEN + f"Adding Math.Log columns for columns {log_columns}..." + Style.RESET_ALL)
     df = reduce(log_column, log_columns, df)
 
-    columns_to_normalize = [Cols.DUR, Cols.GDP_PC_GR, Cols.POL2]
+    columns_to_normalize = [Cols.DUR, Cols.GDP_PC, Cols.GDP_PC_GR, Cols.GDP, Cols.POL2, Cols.INVEST, Cols.GOV_INSTABILITY]
     columns_to_normalize += map(lambda s: f"log_{s}", log_columns)
     print(Fore.GREEN + f"Adding normalized columns (min: {A}, max: {B}) for columns {columns_to_normalize}..." + Style.RESET_ALL)
     df = reduce(normalize_column, columns_to_normalize, df)
 
 
+
     # TODO: Estimate empty values
-    # TODO: Custom regime change column
+
+    df[Cols.INVEST_RISK] = -(df["norm_log_" + Cols.GDP_PC] + df["norm_log_" + Cols.GDP] + df["norm_log_" + Cols.INVEST])
+    df[Cols.POL_RISK] = -((abs(df[Cols.POL2]) / 10) + df["norm_" + Cols.DUR] - (df[Cols.FRAG] / 3) - (df["norm_" + Cols.GOV_INSTABILITY]))
+
+    df[Cols.RISK] = df[Cols.INVEST_RISK] + df[Cols.POL_RISK]
+    df = normalize_column(df, Cols.RISK)
 
     print(Fore.GREEN + f"Exporting to {MERGED_DATASET_PATH}" + Style.RESET_ALL)
     df.to_csv(MERGED_DATASET_PATH, index=False)

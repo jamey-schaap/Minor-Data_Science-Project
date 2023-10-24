@@ -13,7 +13,7 @@ class Cols(StrEnum):
     POL = "polity"
     POL2 = "polity2"
     DUR = "durable"
-    DUR_CH = "durable_changed"
+    GOV_INSTABILITY = "gov_instability"
     GDP = "gdp_rppp"
     GDP_PC = "gdp_rppp_pc"
     GDP_PC_GR = "gdp_rppp_pc_growth"
@@ -26,11 +26,16 @@ class Cols(StrEnum):
     IPPP = "ippp_rppp"
     KPPP = "kppp_rppp"
     FRAG = "fragment"
+    RISK_TEST_2023 = "risk_test_2023"
+    INVEST_RISK = "invest_risk"
+    POL_RISK = "pol_risk"
+    RISK = "risk"
 
+GOV_INSTABILITY_LOOKBACK_YEARS = 200
 
 # Normalization
 A = 0
-B = 10
+B = 1
 
 
 # Country conversion

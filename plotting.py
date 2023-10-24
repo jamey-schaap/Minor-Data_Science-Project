@@ -5,7 +5,7 @@ from configuration import MERGED_DATASET_PATH, Cols
 
 def main() -> None:
     print("Loading dataset...")
-    df = pd.read_csv(MERGED_DATASET_PATH)
+    df = pd.read_excel(MERGED_DATASET_PATH)
 
     print("Plotting...")
     # avg_x_ser = df.groupby(df["year"])["GDP_rppp_pc"].mean()

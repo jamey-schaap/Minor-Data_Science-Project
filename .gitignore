@@ -161,6 +161,7 @@ cython_debug/
 
 # Do not store intermediate datasets in Github.
 datasets/MergedDataset-*.csv
+datasets/MergedDataset-*.xlsx
 
 # Do not store error logs in Github
 error.log

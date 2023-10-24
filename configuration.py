@@ -1,8 +1,9 @@
 from enum import StrEnum
+import os.path
 
 # Paths
 DATASETS_PATH = "datasets"
-MERGED_DATASET_PATH = f"{DATASETS_PATH}/MergedDataset-v1.csv"
+MERGED_DATASET_PATH = os.path.join(DATASETS_PATH, "MergedDataset-V2.xlsx")
 
 
 # Merged dataset column names
@@ -30,6 +31,16 @@ class Cols(StrEnum):
     INVEST_RISK = "invest_risk"
     POL_RISK = "pol_risk"
     RISK = "risk"
+    REG = "region"
+    SUB_REG = "sub_region"
+
+
+# Prefixes
+class Prefs(StrEnum):
+    LOG = "log_"
+    NORM = "norm_"
+    NORM_LOG = "norm_log_"
+
 
 GOV_INSTABILITY_LOOKBACK_YEARS = 200
 

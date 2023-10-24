@@ -3,29 +3,28 @@ from functools import reduce
 from modules import logger
 from modules.helper_functions import *
 from configuration import *
-import json
+import os.path
 from tqdm import tqdm
 
 
 def main() -> None:
     print(Fore.GREEN + "Loading datasets..." + Style.RESET_ALL)
-    with tqdm(total=3, ncols=   100) as pbar:
+    with tqdm(total=4, ncols=100) as pbar:
         pbar.set_description("Loading 'Polity5' dataset")
-        polity_df = pd.read_excel(f"{DATASETS_PATH}/Polity5.xls")
+        polity_df = pd.read_excel(os.path.join(DATASETS_PATH, "Polity5.xls"))
         pbar.update(1)
 
         pbar.set_description("Loading 'IMF' dataset")
-        economic_df = pd.read_excel(f"{DATASETS_PATH}/IMFInvestmentandCapitalStockDataset2021.xlsx", sheet_name="Dataset")
+        economic_df = pd.read_excel(os.path.join(DATASETS_PATH, "IMFInvestmentandCapitalStockDataset2021.xlsx"), sheet_name="Dataset")
         pbar.update(1)
 
         pbar.set_description("Loading 'Population' dataset")
-        population_df = pd.read_excel(f"{DATASETS_PATH}/API_SP.POP.TOTL_DS2_en_excel_v2_5871620.xls", sheet_name="Data")
+        population_df = pd.read_excel(os.path.join(DATASETS_PATH, "API_SP.POP.TOTL_DS2_en_excel_v2_5871620.xls"), sheet_name="Data")
         pbar.update(1)
 
-        with open(f"{DATASETS_PATH}/risk2023.json", "r") as f:
-            risk_json = json.load(f)
-            risk_df = pd.json_normalize(risk_json)
-
+        pbar.set_description("Loading 'Continent' dataset")
+        continent_df = pd.read_csv(os.path.join(DATASETS_PATH, "IMF_Countries_by_Continent.csv"), delimiter=";")
+        pbar.update(1)
     pbar.close()
 
     print(Fore.GREEN + "Selecting rows where (1960 <= year <= 2018)..." + Style.RESET_ALL)
@@ -74,15 +73,11 @@ def main() -> None:
 
     print(Fore.GREEN + "Merging datasets..." + Style.RESET_ALL)
     df = pd.merge(polity_df, economic_df, how="inner", on=["country", "year"])
+    df = pd.merge(df, continent_df, how="inner", on=["country"])
     df.columns = map(str.lower, df.columns)
 
     df_countries = economic_df["country"].unique()
     countries_not_in_population = np.setdiff1d(df_countries, population_countries)
-
-    df = pd.merge(df, risk_df, how="inner", on=["country"])
-
-    df[Cols.RISK_TEST_2023] = pd.to_numeric(df[Cols.RISK])
-    df.drop("risk", axis=1)
 
     print(Fore.GREEN + "Dropping unused columns..." + Style.RESET_ALL)
     cols_to_drop = np.array(("cyear", "ccode", "scode", "flag", "xrreg", "xrcomp", "xropen", "xconst",
@@ -164,18 +159,23 @@ def main() -> None:
     print(Fore.GREEN + f"Adding normalized columns (min: {A}, max: {B}) for columns {columns_to_normalize}..." + Style.RESET_ALL)
     df = reduce(normalize_column, columns_to_normalize, df)
 
-
-
-    # TODO: Estimate empty values
-
-    df[Cols.INVEST_RISK] = -(df["norm_log_" + Cols.GDP_PC] + df["norm_log_" + Cols.GDP] + df["norm_log_" + Cols.INVEST])
-    df[Cols.POL_RISK] = -((abs(df[Cols.POL2]) / 10) + df["norm_" + Cols.DUR] - (df[Cols.FRAG] / 3) - (df["norm_" + Cols.GOV_INSTABILITY]))
-
+    print(Fore.GREEN + f"Adding risk columns: {Cols.INVEST_RISK}, {Cols.POL_RISK}, {Cols.RISK} and {Prefs.NORM + Cols.RISK}..." + Style.RESET_ALL)
+    df[Cols.INVEST_RISK] = -(df[Prefs.NORM_LOG + Cols.GDP_PC] + df[Prefs.NORM_LOG + Cols.GDP] + df[Prefs.NORM_LOG + Cols.INVEST])
+    df[Cols.POL_RISK] = -((abs(df[Cols.POL2]) / 10) + df[Prefs.NORM + Cols.DUR] - (df[Cols.FRAG] / 3) - (df[Prefs.NORM + Cols.GOV_INSTABILITY]))
     df[Cols.RISK] = df[Cols.INVEST_RISK] + df[Cols.POL_RISK]
     df = normalize_column(df, Cols.RISK)
 
+    # TODO: Estimate empty values
+
     print(Fore.GREEN + f"Exporting to {MERGED_DATASET_PATH}" + Style.RESET_ALL)
-    df.to_csv(MERGED_DATASET_PATH, index=False)
+    with tqdm(total=1, ncols=100) as pbar:
+        pbar.set_description("Exporting")
+        df.to_excel(
+            MERGED_DATASET_PATH,
+            index=False,
+            sheet_name="Data")
+        pbar.update(1)
+        pbar.close()
     print("(rows, columns):", df.shape)
 
 

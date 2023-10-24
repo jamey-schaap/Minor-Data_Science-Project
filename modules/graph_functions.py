@@ -10,6 +10,7 @@ from matplotlib.colors import ListedColormap
 from dataclasses import dataclass
 from sklearn.metrics import r2_score
 import matplotlib.patches as mpatches
+import configs.plotting as cf
 
 
 @dataclass
@@ -86,6 +87,19 @@ def _set_labels_ax3d(
         ax.set_zlabel(z_label)
 
 
+def _add_corr_r2_legend(r_sqr: float, r_value: float) -> None:
+    r_sqr_patch = mpatches.Patch(label=f"R-squared: {round(r_sqr, 3)}", color="none")
+    coeff_patch = mpatches.Patch(label=f"Pear. Coeff: {round(r_value, 3)}", color="none")
+    legend = plt.legend(handles=[r_sqr_patch, coeff_patch])
+    frame = legend.get_frame()
+    frame.set_color(cf.LEGEND_FRAME_COLOR)
+
+    # shift = max([t.get_window_extent().width for t in legend.get_texts()])
+    # for t in legend.get_texts():
+    #     t.set_horizontalalignment("right")
+    #     t.set_position((shift, 0))
+
+
 def plot_linear(
         x: str | pd.Series,
         y: str | pd.Series,
@@ -93,20 +107,15 @@ def plot_linear(
         x_label: str | None = None,
         y_label: str | None = None) -> None:
     axes = Axes.create(df=df, x=x, y=y, y_required=True)
+    cf.set_styling()
+
+    sns.regplot(x=axes.x, y=axes.y, line_kws={"color": "red"})
 
     slope, intercept, r_value, p_value, std_err = sc.linregress(x, y)
     r_sqr = r_value**2
-
-    r_sqr_patch = mpatches.Patch(label=f"R-squared: {round(r_sqr, 3)}", color="none")
-    coeff_patch = mpatches.Patch(label=f"Pear. Coeff: {round(r_value, 3)}", color="none")
-    plt.legend(handles=[r_sqr_patch, coeff_patch])
-
-    sns.regplot(x=axes.x, y=axes.y, line_kws={"color": "red"})
-    # scatter_kws={"color": "black"}, line_kws={"color": "red"}
+    _add_corr_r2_legend(r_sqr=r_sqr, r_value=r_value)
 
     _set_labels_plt(x_label, y_label)
-
-    sns.set_style('darkgrid', {"axed.grid": False})
     plt.tight_layout()
     plt.show()
 
@@ -118,13 +127,12 @@ def plot_exponential(
         x_label: str | None = None,
         y_label: str | None = None) -> None:
     axes = Axes.create(df=df, x=x, y=y, y_required=True)
+    cf.set_styling()
 
     plt.scatter(x=axes.x, y=axes.y)
     plt.plot(axes.x, [math.pow(10, v) for v in axes.x], color="red")
 
     _set_labels_plt(x_label, y_label)
-
-    sns.set_style('darkgrid', {"axed.grid": False})
     plt.tight_layout()
     plt.show()
 
@@ -136,14 +144,13 @@ def plot_logarithmic(
         x_label: str | None = None,
         y_label: str | None = None) -> None:
     axes = Axes.create(df=df, x=x, y=y, y_required=True)
+    cf.set_styling()
 
     plt.scatter(axes.x, axes.y)
     axes.x = list(filter(lambda v: v > 0, axes.x))
     plt.plot(axes.x, [math.log(v) for v in axes.x], color="red")
 
     _set_labels_plt(x_label, y_label)
-
-    sns.set_style('darkgrid', {"axed.grid": False})
     plt.tight_layout()
     plt.show()
 
@@ -155,6 +162,7 @@ def plot_polynomial(
         x_label: str | None = None,
         y_label: str | None = None) -> None:
     axes = Axes.create(df=df, x=x, y=y, y_required=True)
+    cf.set_styling()
 
     plt.scatter(axes.x, axes.y)
 
@@ -168,11 +176,11 @@ def plot_polynomial(
     r_sqr = round(r2_score(y, model(x)), 3)
     r_sqr_patch = mpatches.Patch(label=f"R-squared: {r_sqr}", color="none")
     patches.insert(0, r_sqr_patch)
-    plt.legend(handles=patches)
+    legend = plt.legend(handles=patches)
+    frame = legend.get_frame()
+    frame.set_color(cf.LEGEND_FRAME_COLOR)
 
     _set_labels_plt(x_label, y_label)
-
-    sns.set_style('darkgrid', {"axed.grid": False})
     plt.tight_layout()
     plt.show()
 
@@ -182,14 +190,13 @@ def plot_normal_distribution(
         df: pd.DataFrame | None = None,
         x_label: str | None = None) -> None:
     axes = Axes.create(df=df, x=x)
+    cf.set_styling()
 
     mean = x.mean()
     sd = x.std()
     plt.plot(x, sc.norm.pdf(axes.x, mean, sd), label=f"μ: {mean}, σ: {sd}")
 
     _set_labels_plt(x_label)
-
-    sns.set_style('darkgrid', {"axed.grid": False})
     plt.legend()
     plt.tight_layout()
     plt.show()
@@ -204,6 +211,7 @@ def plot_3d_scatter(
         y_label: str | None = None,
         z_label: str | None = None) -> None:
     axes = Axes.create(df=df, x=x, y=y, z=z, y_required=True, z_required=True)
+    cf.set_styling()
 
     fig = plt.figure(figsize=(9, 6))
     ax = Axes3D(fig)
@@ -213,12 +221,42 @@ def plot_3d_scatter(
     scat = ax.scatter(axes.x, axes.y, axes.z, c=axes.y, marker='o', cmap=cmap, alpha=1)
 
     _set_labels_ax3d(ax, x_label, y_label, z_label)
-
-    sns.set_style('darkgrid', {"axed.grid": False})
     plt.legend(*scat.legend_elements(), bbox_to_anchor=(1.05, 1), loc=2)
     plt.show()
 
 
 def plot_pairs(df: pd.DataFrame) -> None:
     sns.pairplot(df)
+    plt.show()
+
+
+def plot_kde(
+        x: str | pd.Series,
+        y: str | pd.Series,
+        df: pd.DataFrame | None = None,
+        x_label: str | None = None,
+        y_label: str | None = None) -> None:
+    """
+    A kernel density estimate (KDE) plot is a method for visualizing the distribution of observations in a dataset,
+    analogous to a histogram. KDE represents the data using a continuous probability density curve in one or more
+    dimensions.
+
+    Relative to a histogram, KDE can produce a plot that is less cluttered and more interpretable, especially when
+    drawing multiple distributions. But it has the potential to introduce distortions if the underlying distribution
+    is bounded or not smooth. Like a histogram, the quality of the representation also depends on the selection of
+    good smoothing parameters.
+    """
+    axes = Axes.create(df=df, x=x, y=y, y_required=True)
+    cf.set_styling()
+
+    slope, intercept, r_value, p_value, std_err = sc.linregress(x, y)
+    r_sqr = r_value**2
+    _add_corr_r2_legend(r_sqr=r_sqr, r_value=r_value)
+
+    sns.regplot(x=axes.x, y=axes.y, line_kws={"color": "black"}, scatter=False)
+    sns.kdeplot(x=axes.x, y=axes.y, cmap="crest", fill=True, bw_adjust=0.5)
+    # Also a cool colormap: "rocket"
+
+    _set_labels_plt(x_label, y_label)
+    plt.tight_layout()
     plt.show()

@@ -4,7 +4,7 @@ import numpy as np
 import pandas as pd
 from typing import Optional, Callable
 from dataclasses import dataclass
-from configuration import A, B, Cols, GOV_INSTABILITY_LOOKBACK_YEARS, Prefs
+from configs.data import A, B, Cols, GOV_INSTABILITY_LOOKBACK_YEARS, Prefs
 
 @dataclass
 class Row:

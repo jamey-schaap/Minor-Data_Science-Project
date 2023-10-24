@@ -1,6 +1,6 @@
 import pandas as pd
 from modules import graph_functions as gf
-from configuration import MERGED_DATASET_PATH, Cols
+from configs.data import MERGED_DATASET_PATH, Cols, Prefs
 
 
 def main() -> None:
@@ -27,13 +27,24 @@ def main() -> None:
     #                 y_label="Polity 2 score",
     #                 z_label="GDP per capita")
 
-    gf.plot_linear(
-        x=df[Cols.DUR],
-        y=df[Cols.INVEST],
+    # gf.plot_linear(
+    #     x=df[Cols.RISK_TEST_2023],
+    #     y=df[Cols.RISK],
+    #     # y=pd.Series([math.log(v) for v in df["GDP_rppp_pc"]]),
+    #     # x_label="GDP per capita (billions)",
+    #     # x_label="Sum of investment data (billions)",
+    #     # y_label="Years since regime change"
+    # )
+
+    gf.plot_kde(
+        x=df[Prefs.NORM_LOG + Cols.GDP_PC],
+        # x=df[Cols.DUR],
+        y=df[Prefs.NORM + Cols.RISK],
         # y=pd.Series([math.log(v) for v in df["GDP_rppp_pc"]]),
-        # x_label="GDP per capita (billions)",
+        x_label="Normalized GDP per capita (thousands, log(10))",
         # x_label="Sum of investment data (billions)",
-        # y_label="Years since regime change"
+        # x_label="Years since regime change",
+        y_label="Risk factor (0-10)"
     )
 
     # gf.plot_exponential(df["polity2"], df["GDP_rppp_pc"])

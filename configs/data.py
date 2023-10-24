@@ -3,7 +3,7 @@ import os.path
 
 # Paths
 DATASETS_PATH = "datasets"
-MERGED_DATASET_PATH = os.path.join(DATASETS_PATH, "MergedDataset-V2.xlsx")
+MERGED_DATASET_PATH = os.path.join(os.getcwd(), DATASETS_PATH, "MergedDataset-V2.xlsx")
 
 
 # Merged dataset column names

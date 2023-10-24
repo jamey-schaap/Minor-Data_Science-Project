@@ -2,7 +2,7 @@ from colorama import Fore, Style
 from functools import reduce
 from modules import logger
 from modules.helper_functions import *
-from configuration import *
+from configs.data import *
 import os.path
 from tqdm import tqdm
 

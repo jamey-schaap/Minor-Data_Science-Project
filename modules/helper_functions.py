@@ -38,7 +38,7 @@ def normalize_column(df: pd.DataFrame, column_name: str) -> pd.DataFrame:
 
 def log_column(df: pd.DataFrame, column_name: str) -> pd.DataFrame:
     result_df = df
-    result_df[f"log_{column_name}"] = [math.log(x) for x in result_df[column_name]]
+    result_df[f"log_{column_name}"] = [math.log10(x) for x in result_df[column_name]]
     return result_df
 
 

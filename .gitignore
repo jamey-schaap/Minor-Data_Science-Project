@@ -160,10 +160,8 @@ cython_debug/
 .idea/
 
 # Do not store intermediate datasets in Github.
-datasets/MergedDataset-*.csv
-datasets/~$MergedDataset-*.csv
-datasets/MergedDataset-*.xlsx
-datasets/~$MergedDataset-*.xlsx
+datasets/MergedDataset-*.*
+datasets/~$*.*
 
 # Do not store error logs in Github
 error.log

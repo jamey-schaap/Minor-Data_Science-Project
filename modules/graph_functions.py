@@ -195,7 +195,7 @@ def plot_normal_distribution(
     plt.show()
 
 
-def scatter_3d_plot(
+def plot_3d_scatter(
         x: str | pd.Series,
         y: str | pd.Series,
         z: str | pd.Series,
@@ -216,4 +216,9 @@ def scatter_3d_plot(
 
     sns.set_style('darkgrid', {"axed.grid": False})
     plt.legend(*scat.legend_elements(), bbox_to_anchor=(1.05, 1), loc=2)
+    plt.show()
+
+
+def plot_pairs(df: pd.DataFrame) -> None:
+    sns.pairplot(df)
     plt.show()

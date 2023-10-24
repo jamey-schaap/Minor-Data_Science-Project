@@ -25,6 +25,7 @@ class Cols(StrEnum):
     KPRIV = "kpriv_rppp"
     IPPP = "ippp_rppp"
     KPPP = "kppp_rppp"
+    FRAG = "fragment"
 
 
 # Normalization

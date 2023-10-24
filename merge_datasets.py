@@ -64,7 +64,7 @@ def main() -> None:
     countries_not_in_population = np.setdiff1d(df_countries, population_countries)
 
     print(Fore.GREEN + "Dropping unused columns..." + Style.RESET_ALL)
-    cols_to_drop = np.array(("cyear", "ccode", "scode", "flag", "fragment", "xrreg", "xrcomp", "xropen", "xconst",
+    cols_to_drop = np.array(("cyear", "ccode", "scode", "flag", "xrreg", "xrcomp", "xropen", "xconst",
                              "parreg", "parcomp", "exrec", "exconst", "polcomp", "prior", "emonth", "eday", "eyear",
                              "eprec", "interim", "bmonth", "bday", "byear", "bprec", "post", "change", "d5", "sf",
                              "regtrans", "isocode", "ifscode", "igov_n", "kgov_n", "ipriv_n", "kpriv_n", "kppp_n",
@@ -110,7 +110,7 @@ def main() -> None:
     df[set_to_default_columns] = df[set_to_default_columns].fillna(0)
 
     print(Fore.GREEN + "Adding column: Sum of investment (sum_invest)..." + Style.RESET_ALL)
-    df[Cols.INVEST] = df[Cols.IGOV] + df[Cols.KGOV] + df[Cols.IPRIV] + df[Cols.KPRIV] + df[Cols.IPPP] + df[Cols.KPPP]
+    df[Cols.INVEST] = df[Cols.IGOV] + df[Cols.IPRIV] + df[Cols.IPPP]
 
     print(Fore.GREEN + "Adding column: Durable changed (durable_changed)..." + Style.RESET_ALL)
     shifted_df = df.shift(1)
@@ -146,14 +146,18 @@ def main() -> None:
     df = df.dropna(subset=drop_na_columns)
     df = df[df[Cols.INVEST] != 0]
 
-    log_columns = [Cols.GDP_PC, Cols.INVEST]
+    log_columns = [Cols.GDP, Cols.GDP_PC, Cols.INVEST]
     print(Fore.GREEN + f"Adding Math.Log columns for columns {log_columns}..." + Style.RESET_ALL)
     df = reduce(log_column, log_columns, df)
 
-    columns_to_normalize = [Cols.DUR, Cols.GDP_PC, Cols.GDP_PC_GR, Cols.POL2, Cols.INVEST]
+    columns_to_normalize = [Cols.DUR, Cols.GDP_PC_GR, Cols.POL2]
     columns_to_normalize += map(lambda s: f"log_{s}", log_columns)
     print(Fore.GREEN + f"Adding normalized columns (min: {A}, max: {B}) for columns {columns_to_normalize}..." + Style.RESET_ALL)
     df = reduce(normalize_column, columns_to_normalize, df)
+
+
+    # TODO: Estimate empty values
+    # TODO: Custom regime change column
 
     print(Fore.GREEN + f"Exporting to {MERGED_DATASET_PATH}" + Style.RESET_ALL)
     df.to_csv(MERGED_DATASET_PATH, index=False)

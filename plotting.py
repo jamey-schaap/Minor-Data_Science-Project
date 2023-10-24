@@ -29,7 +29,7 @@ def main() -> None:
 
     gf.plot_linear(
         x=df[Cols.DUR],
-        y=df[Cols.GDP_PC],
+        y=df[Cols.INVEST],
         # y=pd.Series([math.log(v) for v in df["GDP_rppp_pc"]]),
         # x_label="GDP per capita (billions)",
         # x_label="Sum of investment data (billions)",
@@ -48,6 +48,8 @@ def main() -> None:
     # gf.plot_polynomial(df["durable"], df["GDP_rppp_pc"])
 
     # gf.plot_normal_distribution(df["GDP_rppp"])
+
+    # gf.plot_pairs(df)
 
 
 if __name__ == '__main__':

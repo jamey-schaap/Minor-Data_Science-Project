@@ -2,6 +2,7 @@ from colorama import Fore, Style
 from functools import reduce
 from modules import logger
 from modules.helper_functions import *
+from configs.enums import *
 from configs.data import *
 import os.path
 from tqdm import tqdm
@@ -62,12 +63,12 @@ def main() -> None:
     economic_df = economic_df[~economic_df["country"].isin(countries_not_in_economic)]
 
     print(Fore.GREEN + "Adding column: Government instability (gov_instability)..." + Style.RESET_ALL)
-    polity_df[Cols.GOV_INSTABILITY] = [
+    polity_df[Column.GOV_INSTABILITY] = [
         calculate_gov_instability(polity_df, country, year)
         for country, year
         in tqdm(
-            zip(polity_df[Cols.COUNTRY], polity_df[Cols.YEAR]),
-            total=len(polity_df[Cols.COUNTRY]),
+            zip(polity_df[Column.COUNTRY], polity_df[Column.YEAR]),
+            total=len(polity_df[Column.COUNTRY]),
             ncols=100,
             desc="Processing")]
 
@@ -93,9 +94,9 @@ def main() -> None:
     print("Countries not in Population: ", countries_not_in_population, Style.RESET_ALL)
 
     print(Fore.GREEN + "Adding column: Government Type (gov_typ)..." + Style.RESET_ALL)
-    gov_conditions = [(df[Cols.POL2] > 5), (df[Cols.POL2] < -5), (df[Cols.POL2] >= -5) & (df[Cols.POL2] <= 5)]
+    gov_conditions = [(df[Column.POL2] > 5), (df[Column.POL2] < -5), (df[Column.POL2] >= -5) & (df[Column.POL2] <= 5)]
     gov_options = ["democ", "autoc", "anoc"]
-    df[Cols.GTYPE] = np.select(gov_conditions, gov_options)
+    df[Column.GTYPE] = np.select(gov_conditions, gov_options)
 
     print(Fore.GREEN + "Adding column: Population (population)..." + Style.RESET_ALL)
 
@@ -109,61 +110,61 @@ def main() -> None:
         logger.log_error(f"[get_population] Country: '{country}', Year: '{year}', found {rows_df.shape[0]} rows")
         return None
 
-    df[Cols.POP] = [
+    df[Column.POP] = [
         get_population(country, year)
         for country, year
         in tqdm(
-            zip(df[Cols.COUNTRY], df[Cols.YEAR]),
-            total=len(df[Cols.COUNTRY]),
+            zip(df[Column.COUNTRY], df[Column.YEAR]),
+            total=len(df[Column.COUNTRY]),
             ncols=100,
             desc="Processing")]
 
     print(Fore.GREEN + "Adding column: Constant-Dollar GDP 2017 per Capita (GDP_rppp_pc)..." + Style.RESET_ALL)
-    df[Cols.GDP_PC] = [(gdp_rpp * 1_000_000_000) / population for gdp_rpp, population in zip(df[Cols.GDP], df[Cols.POP])]
+    df[Column.GDP_PC] = [(gdp_rpp * 1_000_000_000) / population for gdp_rpp, population in zip(df[Column.GDP], df[Column.POP])]
 
-    set_to_default_columns = [Cols.IGOV, Cols.KGOV, Cols.IPRIV, Cols.KPRIV, Cols.IPPP, Cols.KPPP, Cols.FRAG]
+    set_to_default_columns = [Column.IGOV, Column.KGOV, Column.IPRIV, Column.KPRIV, Column.IPPP, Column.KPPP, Column.FRAG]
     print(Fore.GREEN + f"Setting default values where NaN for columns {set_to_default_columns}..." + Style.RESET_ALL)
     df[set_to_default_columns] = df[set_to_default_columns].fillna(0)
 
     print(Fore.GREEN + "Adding column: Sum of investment (sum_invest)..." + Style.RESET_ALL)
-    df[Cols.INVEST] = df[Cols.IGOV] + df[Cols.IPRIV] + df[Cols.IPPP]
+    df[Column.INVEST] = df[Column.IGOV] + df[Column.IPRIV] + df[Column.IPPP]
 
     print(Fore.GREEN + "Adding column: Annual GDP per capita growth (gdp_rppp_pc_growth)..." + Style.RESET_ALL)
     shifted_df = df.shift(1)
     calculate_annual_gdp_growth = calculate_from_prev_row(lambda prev_row, cur_row: (cur_row.gdp_pc - prev_row.gdp_pc) / prev_row.gdp_pc * 100)
-    df[Cols.GDP_PC_GR] = [
+    df[Column.GDP_PC_GR] = [
         calculate_annual_gdp_growth(
             Row.create(country=prev_country, year=prev_year, gdp_pc=prev_gdp_pc),
             Row.create(country=cur_country, year=cur_year, gdp_pc=cur_gdp_pc))
         for prev_country, prev_year, prev_gdp_pc, cur_country, cur_year, cur_gdp_pc
         in zip(
-            shifted_df[Cols.COUNTRY], shifted_df[Cols.YEAR], shifted_df[Cols.GDP_PC],
-            df[Cols.COUNTRY], df[Cols.YEAR], df[Cols.GDP_PC])]
+            shifted_df[Column.COUNTRY], shifted_df[Column.YEAR], shifted_df[Column.GDP_PC],
+            df[Column.COUNTRY], df[Column.YEAR], df[Column.GDP_PC])]
 
     print(Fore.GREEN + "Selecting rows where (year > 1960)..." + Style.RESET_ALL)
     # Since "gdp_rppp_pc_growth" and "durable_changed" cannot be calculated from years before 1961,
     # given the data of our current datasets.
-    df = df[df[Cols.YEAR] > 1960]
+    df = df[df[Column.YEAR] > 1960]
 
-    drop_na_columns = [Cols.POL2, Cols.DUR, Cols.GDP_PC, Cols.GDP_PC_GR]
+    drop_na_columns = [Column.POL2, Column.DUR, Column.GDP_PC, Column.GDP_PC_GR]
     print(Fore.YELLOW + f"Dropping NA values in columns {drop_na_columns}..." + Style.RESET_ALL)
     df = df.dropna(subset=drop_na_columns)
-    df = df[df[Cols.INVEST] != 0]
+    df = df[df[Column.INVEST] != 0]
 
-    log_columns = [Cols.GDP_PC, Cols.GDP, Cols.INVEST]
+    log_columns = [Column.GDP_PC, Column.GDP, Column.INVEST]
     print(Fore.GREEN + f"Adding Math.Log columns for columns {log_columns}..." + Style.RESET_ALL)
     df = reduce(log_column, log_columns, df)
 
-    columns_to_normalize = [Cols.DUR, Cols.GDP_PC, Cols.GDP_PC_GR, Cols.GDP, Cols.POL2, Cols.INVEST, Cols.GOV_INSTABILITY]
+    columns_to_normalize = [Column.DUR, Column.GDP_PC, Column.GDP_PC_GR, Column.GDP, Column.POL2, Column.INVEST, Column.GOV_INSTABILITY]
     columns_to_normalize += map(lambda s: f"log_{s}", log_columns)
     print(Fore.GREEN + f"Adding normalized columns (min: {A}, max: {B}) for columns {columns_to_normalize}..." + Style.RESET_ALL)
     df = reduce(normalize_column, columns_to_normalize, df)
 
-    print(Fore.GREEN + f"Adding risk columns: {Cols.INVEST_RISK}, {Cols.POL_RISK}, {Cols.RISK} and {Prefs.NORM + Cols.RISK}..." + Style.RESET_ALL)
-    df[Cols.INVEST_RISK] = -(df[Prefs.NORM_LOG + Cols.GDP_PC] + df[Prefs.NORM_LOG + Cols.GDP] + df[Prefs.NORM_LOG + Cols.INVEST])
-    df[Cols.POL_RISK] = -((abs(df[Cols.POL2]) / 10) + df[Prefs.NORM + Cols.DUR] - (df[Cols.FRAG] / 3) - (df[Prefs.NORM + Cols.GOV_INSTABILITY]))
-    df[Cols.RISK] = df[Cols.INVEST_RISK] + df[Cols.POL_RISK]
-    df = normalize_column(df, Cols.RISK)
+    print(Fore.GREEN + f"Adding risk columns: {Column.INVEST_RISK}, {Column.POL_RISK}, {Column.RISK} and {Prefix.NORM + Column.RISK}..." + Style.RESET_ALL)
+    df[Column.INVEST_RISK] = -(df[Prefix.NORM_LOG + Column.GDP_PC] + df[Prefix.NORM_LOG + Column.GDP] + df[Prefix.NORM_LOG + Column.INVEST])
+    df[Column.POL_RISK] = -((abs(df[Column.POL2]) / 10) + df[Prefix.NORM + Column.DUR] - (df[Column.FRAG] / 3) - (df[Prefix.NORM + Column.GOV_INSTABILITY]))
+    df[Column.RISK] = df[Column.INVEST_RISK] + df[Column.POL_RISK]
+    df = normalize_column(df, Column.RISK)
 
     # TODO: Estimate empty values
 

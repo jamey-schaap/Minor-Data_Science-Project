@@ -1,6 +1,21 @@
 import pandas as pd
 from modules import graph_functions as gf
-from configs.data import MERGED_DATASET_PATH, Cols, Prefs
+from configs.enums import Column, Prefix, Description
+from configs.data import MERGED_DATASET_PATH
+from typing import Callable
+
+
+def simple_invoke(
+        df: pd.DataFrame,
+        x: Column | str,
+        y: Column | str,
+        plot_func: Callable) -> None:
+    get_description = lambda s: s.get_description() if type(s) is Column else Description[str.upper(s)]
+    plot_func(
+        x=df[x],
+        y=df[y],
+        x_label=get_description(x),
+        y_label=get_description(y))
 
 
 def main() -> None:
@@ -8,59 +23,7 @@ def main() -> None:
     df = pd.read_excel(MERGED_DATASET_PATH)
 
     print("Plotting...")
-    # avg_x_ser = df.groupby(df["year"])["GDP_rppp_pc"].mean()
-    # avg_y_ser = df.groupby(df["year"])["test"].mean()
-    # gf.plot_linear(
-    #     avg_x_ser,
-    #     avg_y_ser,
-    #     x_label="avg. GDP per capita (billions)",
-    #     y_label="avg. Sum of investment (billions)",
-    #     # y_label="avg. Years since regime change",
-    #     # y_label="avg. Polity 2 Score",
-    # )
-
-    # gf.scatter_3d_plot(df,
-    #                 x="durable",
-    #                 y="polity2",
-    #                 z="GDP_rppp_pc",
-    #                 x_label="Years since regime change",
-    #                 y_label="Polity 2 score",
-    #                 z_label="GDP per capita")
-
-    # gf.plot_linear(
-    #     x=df[Cols.RISK_TEST_2023],
-    #     y=df[Cols.RISK],
-    #     # y=pd.Series([math.log(v) for v in df["GDP_rppp_pc"]]),
-    #     # x_label="GDP per capita (billions)",
-    #     # x_label="Sum of investment data (billions)",
-    #     # y_label="Years since regime change"
-    # )
-
-    gf.plot_kde(
-        x=df[Prefs.NORM_LOG + Cols.GDP_PC],
-        # x=df[Cols.DUR],
-        y=df[Prefs.NORM + Cols.RISK],
-        # y=pd.Series([math.log(v) for v in df["GDP_rppp_pc"]]),
-        x_label="Normalized GDP per capita (thousands, log(10))",
-        # x_label="Sum of investment data (billions)",
-        # x_label="Years since regime change",
-        y_label="Risk factor (0-10)"
-    )
-
-    # gf.plot_exponential(df["polity2"], df["GDP_rppp_pc"])
-
-    # gf.plot_logarithmic(
-    #     x=df["GDP_rppp_pc"],
-    #     y=df["durable"],
-    #     x_label="GDP per capita (billions)",
-    #     y_label="Years since regime change"
-    # )
-
-    # gf.plot_polynomial(df["durable"], df["GDP_rppp_pc"])
-
-    # gf.plot_normal_distribution(df["GDP_rppp"])
-
-    # gf.plot_pairs(df)
+    simple_invoke(df, x=Column.DUR, y=Prefix.NORM + Column.RISK, plot_func=gf.plot_kde)
 
 
 if __name__ == '__main__':

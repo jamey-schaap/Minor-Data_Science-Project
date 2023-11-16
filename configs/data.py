@@ -1,47 +1,10 @@
-from enum import StrEnum
 import os.path
 
 # Paths
 DATASETS_PATH = "datasets"
 MERGED_DATASET_PATH = os.path.join(os.getcwd(), DATASETS_PATH, "MergedDataset-V2.xlsx")
 
-
-# Merged dataset column names
-class Cols(StrEnum):
-    COUNTRY = "country"
-    YEAR = "year"
-    GTYPE = "gov_type"
-    POL = "polity"
-    POL2 = "polity2"
-    DUR = "durable"
-    GOV_INSTABILITY = "gov_instability"
-    GDP = "gdp_rppp"
-    GDP_PC = "gdp_rppp_pc"
-    GDP_PC_GR = "gdp_rppp_pc_growth"
-    INVEST = "sum_invest"
-    POP = "population"
-    IGOV = "igov_rppp"
-    KGOV = "kgov_rppp"
-    IPRIV = "ipriv_rppp"
-    KPRIV = "kpriv_rppp"
-    IPPP = "ippp_rppp"
-    KPPP = "kppp_rppp"
-    FRAG = "fragment"
-    RISK_TEST_2023 = "risk_test_2023"
-    INVEST_RISK = "invest_risk"
-    POL_RISK = "pol_risk"
-    RISK = "risk"
-    REG = "region"
-    SUB_REG = "sub_region"
-
-
-# Prefixes
-class Prefs(StrEnum):
-    LOG = "log_"
-    NORM = "norm_"
-    NORM_LOG = "norm_log_"
-
-
+# Calculation gov_instability
 GOV_INSTABILITY_LOOKBACK_YEARS = 200
 
 # Normalization

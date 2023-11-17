@@ -3,6 +3,7 @@ import os.path
 # Paths
 DATASETS_PATH = "datasets"
 MERGED_DATASET_PATH = os.path.join(os.getcwd(), DATASETS_PATH, "MergedDataset-V2.xlsx")
+MACHINE_LEARNING_DATASET_PATH = os.path.join(os.getcwd(), DATASETS_PATH, "MachineLearning-Dataset-V1.xlsx")
 
 # Calculation gov_instability
 GOV_INSTABILITY_LOOKBACK_YEARS = 200

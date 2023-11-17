@@ -1,6 +1,7 @@
 import pandas as pd
 from configs.data import MERGED_DATASET_PATH
 from sklearn.preprocessing import StandardScaler
+from sklearn.metrics import classification_report
 from imblearn.over_sampling import RandomOverSampler
 import numpy as np
 
@@ -61,6 +62,10 @@ def main():
     train, X_train, y_train = scale_dataset(train, oversample=True)
     valid, X_valid, y_valid = scale_dataset(valid, oversample=False)
     test, X_test, y_test = scale_dataset(test, oversample=False)
+
+    y_pred = ...
+
+    print(classification_report(y_test, y_pred))
 
 
 if __name__ == "__main__":

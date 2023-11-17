@@ -1,3 +1,4 @@
+import pandas as pd
 from colorama import Fore, Style
 from functools import reduce
 from modules import logger
@@ -8,25 +9,12 @@ import os.path
 from tqdm import tqdm
 
 
-def main() -> None:
-    print(Fore.GREEN + "Loading datasets..." + Style.RESET_ALL)
-    with tqdm(total=4, ncols=100) as pbar:
-        pbar.set_description("Loading 'Polity5' dataset")
-        polity_df = pd.read_excel(os.path.join(DATASETS_PATH, "Polity5.xls"))
-        pbar.update(1)
-
-        pbar.set_description("Loading 'IMF' dataset")
-        economic_df = pd.read_excel(os.path.join(DATASETS_PATH, "IMFInvestmentandCapitalStockDataset2021.xlsx"), sheet_name="Dataset")
-        pbar.update(1)
-
-        pbar.set_description("Loading 'Population' dataset")
-        population_df = pd.read_excel(os.path.join(DATASETS_PATH, "API_SP.POP.TOTL_DS2_en_excel_v2_5871620.xls"), sheet_name="Data")
-        pbar.update(1)
-
-        pbar.set_description("Loading 'Continent' dataset")
-        continent_df = pd.read_csv(os.path.join(DATASETS_PATH, "IMF_Countries_by_Continent.csv"), delimiter=";")
-        pbar.update(1)
-    pbar.close()
+def merge_datasets(
+        polity_df: pd.DataFrame,
+        economic_df: pd.DataFrame,
+        population_df: pd.DataFrame,
+        continent_df: pd.DataFrame) -> pd.DataFrame:
+    print(Fore.BLUE + "Merging datasets..." + Style.RESET_ALL)
 
     print(Fore.GREEN + "Selecting rows where (1960 <= year <= 2018)..." + Style.RESET_ALL)
     polity_df = polity_df[
@@ -94,7 +82,10 @@ def main() -> None:
     print("Countries not in Population: ", countries_not_in_population, Style.RESET_ALL)
 
     print(Fore.GREEN + "Adding column: Government Type (gov_typ)..." + Style.RESET_ALL)
-    gov_conditions = [(df[Column.POL2] > 5), (df[Column.POL2] < -5), (df[Column.POL2] >= -5) & (df[Column.POL2] <= 5)]
+    gov_conditions = [
+        (df[Column.POL2] > 5),
+        (df[Column.POL2] < -5),
+        (df[Column.POL2] >= -5) & (df[Column.POL2] <= 5)]
     gov_options = ["democ", "autoc", "anoc"]
     df[Column.GTYPE] = np.select(gov_conditions, gov_options)
 
@@ -120,9 +111,11 @@ def main() -> None:
             desc="Processing")]
 
     print(Fore.GREEN + "Adding column: Constant-Dollar GDP 2017 per Capita (GDP_rppp_pc)..." + Style.RESET_ALL)
-    df[Column.GDP_PC] = [(gdp_rpp * 1_000_000_000) / population for gdp_rpp, population in zip(df[Column.GDP], df[Column.POP])]
+    df[Column.GDP_PC] = [(gdp_rpp * 1_000_000_000) / population for gdp_rpp, population in
+                         zip(df[Column.GDP], df[Column.POP])]
 
-    set_to_default_columns = [Column.IGOV, Column.KGOV, Column.IPRIV, Column.KPRIV, Column.IPPP, Column.KPPP, Column.FRAG]
+    set_to_default_columns = [Column.IGOV, Column.KGOV, Column.IPRIV, Column.KPRIV, Column.IPPP, Column.KPPP,
+                              Column.FRAG]
     print(Fore.GREEN + f"Setting default values where NaN for columns {set_to_default_columns}..." + Style.RESET_ALL)
     df[set_to_default_columns] = df[set_to_default_columns].fillna(0)
 
@@ -131,7 +124,8 @@ def main() -> None:
 
     print(Fore.GREEN + "Adding column: Annual GDP per capita growth (gdp_rppp_pc_growth)..." + Style.RESET_ALL)
     shifted_df = df.shift(1)
-    calculate_annual_gdp_growth = calculate_from_prev_row(lambda prev_row, cur_row: (cur_row.gdp_pc - prev_row.gdp_pc) / prev_row.gdp_pc * 100)
+    calculate_annual_gdp_growth = calculate_from_prev_row(
+        lambda prev_row, cur_row: (cur_row.gdp_pc - prev_row.gdp_pc) / prev_row.gdp_pc * 100)
     df[Column.GDP_PC_GR] = [
         calculate_annual_gdp_growth(
             Row.create(country=prev_country, year=prev_year, gdp_pc=prev_gdp_pc),
@@ -155,16 +149,27 @@ def main() -> None:
     print(Fore.GREEN + f"Adding Math.Log columns for columns {log_columns}..." + Style.RESET_ALL)
     df = reduce(log_column, log_columns, df)
 
-    columns_to_normalize = [Column.DUR, Column.GDP_PC, Column.GDP_PC_GR, Column.GDP, Column.POL2, Column.INVEST, Column.GOV_INSTABILITY]
+    columns_to_normalize = [Column.DUR, Column.GDP_PC, Column.GDP_PC_GR, Column.GDP, Column.POL2, Column.INVEST,
+                            Column.GOV_INSTABILITY]
     columns_to_normalize += map(lambda s: f"log_{s}", log_columns)
-    print(Fore.GREEN + f"Adding normalized columns (min: {A}, max: {B}) for columns {columns_to_normalize}..." + Style.RESET_ALL)
+    print(
+        Fore.GREEN + f"Adding normalized columns (min: {A}, max: {B}) for columns {columns_to_normalize}..." + Style.RESET_ALL)
     df = reduce(normalize_column, columns_to_normalize, df)
 
-    print(Fore.GREEN + f"Adding risk columns: {Column.INVEST_RISK}, {Column.POL_RISK}, {Column.RISK} and {Prefix.NORM + Column.RISK}..." + Style.RESET_ALL)
-    df[Column.INVEST_RISK] = -(df[Prefix.NORM_LOG + Column.GDP_PC] + df[Prefix.NORM_LOG + Column.GDP] + df[Prefix.NORM_LOG + Column.INVEST])
-    df[Column.POL_RISK] = -((abs(df[Column.POL2]) / 10) + df[Prefix.NORM + Column.DUR] - (df[Column.FRAG] / 3) - (df[Prefix.NORM + Column.GOV_INSTABILITY]))
+    print(
+        Fore.GREEN + f"Adding risk columns: {Column.INVEST_RISK}, {Column.POL_RISK}, {Column.RISK} and {Prefix.NORM + Column.RISK}..." + Style.RESET_ALL)
+    df[Column.INVEST_RISK] = -(df[Prefix.NORM_LOG + Column.GDP_PC] + df[Prefix.NORM_LOG + Column.GDP] + df[
+        Prefix.NORM_LOG + Column.INVEST])
+    df[Column.POL_RISK] = -((abs(df[Column.POL2]) / 10) + df[Prefix.NORM + Column.DUR] - (df[Column.FRAG] / 3) - (
+        df[Prefix.NORM + Column.GOV_INSTABILITY]))
     df[Column.RISK] = df[Column.INVEST_RISK] + df[Column.POL_RISK]
     df = normalize_column(df, Column.RISK)
+
+    country_risk_options = RiskClassifications.get_names()
+    norm_risk = Prefix.NORM + Column.RISK
+    print(Fore.GREEN + f"Categorizing {norm_risk} into {country_risk_options}" + Style.RESET_ALL)
+    country_risk_conditions = [f(df[norm_risk]) for f in RiskClassifications.get_conditions()]
+    df[Column.COUNTRY_RISK] = np.select(country_risk_conditions, country_risk_options)
 
     # TODO: Estimate empty values
 
@@ -178,6 +183,70 @@ def main() -> None:
         pbar.update(1)
         pbar.close()
     print("(rows, columns):", df.shape)
+
+    return df
+
+
+def create_machine_learning_dataset(df: pd.DataFrame) -> pd.DataFrame:
+    print(Fore.BLUE + "Creating machine learning dataset..." + Style.RESET_ALL)
+
+    features = [Column.POL2, Column.DUR, Column.FRAG, Column.GOV_INSTABILITY, Column.GDP, Column.GDP_PC, Column.IGOV,
+                Column.IPRIV, Column.IPPP]
+    print(Fore.GREEN + f"Filtering columns to features: {features}" + Style.RESET_ALL)
+    ml_df = df.loc[:, features]
+
+    print(Fore.GREEN + f"Parsing {Column.COUNTRY_RISK} column to a numerical value" + Style.RESET_ALL)
+    # Lambda does not work
+    def equality_hof(x):
+        def wrapper(v):
+            return x == v
+        return wrapper
+
+    name_equality_funcs = [equality_hof(x) for x in RiskClassifications.get_names()]
+    country_risk_conditions = [f(df[Column.COUNTRY_RISK]) for f in name_equality_funcs]
+    country_risk_values = RiskClassifications.get_values()
+    ml_df[Column.COUNTRY_RISK] = np.select(country_risk_conditions, country_risk_values)
+
+    print(Fore.GREEN + f"Exporting to {MACHINE_LEARNING_DATASET_PATH}" + Style.RESET_ALL)
+    with tqdm(total=1, ncols=100) as pbar:
+        pbar.set_description("Exporting")
+        ml_df.to_excel(
+            MACHINE_LEARNING_DATASET_PATH,
+            index=False,
+            sheet_name="Data")
+        pbar.update(1)
+        pbar.close()
+    print("(rows, columns):", ml_df.shape)
+
+    return ml_df
+
+
+def main() -> None:
+    print(Fore.GREEN + "Loading datasets..." + Style.RESET_ALL)
+    with tqdm(total=4, ncols=100) as pbar:
+        pbar.set_description("Loading 'Polity5' dataset")
+        polity_df = pd.read_excel(os.path.join(DATASETS_PATH, "Polity5.xls"))
+        pbar.update(1)
+
+        pbar.set_description("Loading 'IMF' dataset")
+        economic_df = pd.read_excel(os.path.join(DATASETS_PATH, "IMFInvestmentandCapitalStockDataset2021.xlsx"), sheet_name="Dataset")
+        pbar.update(1)
+
+        pbar.set_description("Loading 'Population' dataset")
+        population_df = pd.read_excel(os.path.join(DATASETS_PATH, "API_SP.POP.TOTL_DS2_en_excel_v2_5871620.xls"), sheet_name="Data")
+        pbar.update(1)
+
+        pbar.set_description("Loading 'Continent' dataset")
+        continent_df = pd.read_csv(os.path.join(DATASETS_PATH, "IMF_Countries_by_Continent.csv"), delimiter=";")
+        pbar.update(1)
+    pbar.close()
+
+    df = merge_datasets(
+        polity_df=polity_df,
+        economic_df=economic_df,
+        population_df=population_df,
+        continent_df=continent_df)
+    ml_df = create_machine_learning_dataset(df)
 
 
 if __name__ == '__main__':

@@ -1,5 +1,5 @@
 import pandas as pd
-from configs.data import MERGED_DATASET_PATH
+from configs.data import MACHINE_LEARNING_DATASET_PATH
 from sklearn.preprocessing import StandardScaler
 from sklearn.metrics import classification_report
 from imblearn.over_sampling import RandomOverSampler
@@ -54,7 +54,7 @@ def scale_dataset(dataframe: pd.DataFrame, oversample: bool = False):
 
 def main():
     print("Loading dataset...")
-    df = pd.read_excel(MERGED_DATASET_PATH)
+    df = pd.read_excel(MACHINE_LEARNING_DATASET_PATH)
 
     # Train (60%), validation (20%) and test (20%) datasets
     train, valid, test = np.split(df.sample(frac=1), [int(0.6 * len(df)), int(0.8 * len(df))])
@@ -63,8 +63,22 @@ def main():
     valid, X_valid, y_valid = scale_dataset(valid, oversample=False)
     test, X_test, y_test = scale_dataset(test, oversample=False)
 
-    y_pred = ...
+    from sklearn.neighbors import KNeighborsClassifier
+    knn_model = KNeighborsClassifier(n_neighbors=5)
+    knn_model.fit(X_train, y_train)
+    y_pred = knn_model.predict(X_test)
+    print(classification_report(y_test, y_pred))
 
+    from sklearn.linear_model import LogisticRegression
+    lg_model = LogisticRegression()
+    lg_model = lg_model.fit(X_train, y_train)
+    y_pred = lg_model.predict(X_test)
+    print(classification_report(y_test, y_pred))
+
+    from sklearn.svm import SVC
+    svm_model = SVC()
+    svm_model = svm_model.fit(X_train, y_train)
+    y_pred = svm_model.predict(X_test)
     print(classification_report(y_test, y_pred))
 
 

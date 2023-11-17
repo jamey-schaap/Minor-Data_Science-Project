@@ -70,10 +70,20 @@ class RiskClassification:
 
 class RiskClassifications(object):
     # -0.1 to include a perfect score of 0
-    low = RiskClassification("low", 1, -0.1, 0.39)
-    medium = RiskClassification("medium", 2, 0.39, 0.69)
-    high = RiskClassification("high", 3, 0.69, 0.89)
-    critical = RiskClassification("critical", 4, 0.89, 1)
+
+    # low = RiskClassification("low", 1, -0.1, 0.39)
+    # medium = RiskClassification("medium", 2, 0.39, 0.69)
+    # high = RiskClassification("high", 3, 0.69, 0.89)
+    # critical = RiskClassification("critical", 4, 0.89, 1)
+
+    # low = RiskClassification("low", 1, -0.1, 0.25)
+    # medium = RiskClassification("medium", 2, 0.25, 0.5)
+    # high = RiskClassification("high", 3, 0.5, 0.75)
+    # critical = RiskClassification("critical", 4, 0.75, 1)
+
+    low = RiskClassification("low", 1, -0.1, 0.333333)
+    medium = RiskClassification("medium", 2, 0.333333, 0.666666)
+    high = RiskClassification("high", 3, 0.666666, 1)
 
     @classmethod
     def __get_attributes(cls) -> dict:

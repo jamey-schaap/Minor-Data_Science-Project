@@ -1,0 +1,12 @@
+version: 1.0.0
+services:
+  tensorflow:
+    container_name: ds-project-tensorflow
+    image: ds-project-tensorflow:latest
+    build:
+      context: ./
+      dockerfile: Dockerfile
+    volumes:
+      - ./out:/app/out:rw
+    ports:
+      - 8080

@@ -82,5 +82,8 @@ def main():
     print(classification_report(y_test, y_pred))
 
 
+    nn_model
+
+
 if __name__ == "__main__":
     main()

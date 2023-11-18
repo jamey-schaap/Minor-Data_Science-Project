@@ -8,5 +8,6 @@ services:
       dockerfile: Dockerfile
     volumes:
       - ./out:/app/out:rw
+      - ./neural-network.ipynb:/app/neural-network.ipynb:rw
     ports:
-      - 8080
+      - 8888:8888

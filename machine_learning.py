@@ -71,18 +71,22 @@ def main():
 
     from sklearn.linear_model import LogisticRegression
     lg_model = LogisticRegression()
-    lg_model = lg_model.fit(X_train, y_train)
+    lg_model.fit(X_train, y_train)
     y_pred = lg_model.predict(X_test)
     print(classification_report(y_test, y_pred))
 
     from sklearn.svm import SVC
     svm_model = SVC()
-    svm_model = svm_model.fit(X_train, y_train)
+    svm_model.fit(X_train, y_train)
     y_pred = svm_model.predict(X_test)
     print(classification_report(y_test, y_pred))
 
+    from sklearn.ensemble import RandomForestClassifier
+    rf_model = RandomForestClassifier(n_estimators=1000, random_state=42)
+    rf_model.fit(X_train, y_train)
+    y_pred = rf_model.predict(X_test)
+    print(classification_report(y_test, y_pred))
 
-    nn_model
 
 
 if __name__ == "__main__":

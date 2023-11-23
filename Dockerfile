@@ -6,7 +6,7 @@ WORKDIR /app
 RUN mkdir -p ./out
 
 COPY ./datasets/MachineLearning-Dataset-V1.xlsx ./
-COPY ./neural-network.ipynb ./
+COPY neural-network.ipynb ./
 COPY ./requirements.txt ./
 
 RUN pip install -r requirements.txt

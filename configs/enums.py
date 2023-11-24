@@ -86,20 +86,20 @@ class RiskClassifications(object):
     high = RiskClassification("high", 3, 0.666666, 1)
 
     @classmethod
-    def __get_attributes(cls) -> dict:
+    def get_attributes(cls) -> dict:
         return {x: v for x, v in vars(cls).items() if type(v) is RiskClassification}
 
     @classmethod
     def get_names(cls) -> [str]:
-        attrs = cls.__get_attributes()
+        attrs = cls.get_attributes()
         return [v.name for v in attrs.values()]
 
     @classmethod
     def get_values(cls) -> [str]:
-        attrs = cls.__get_attributes()
+        attrs = cls.get_attributes()
         return [v.value for v in attrs.values()]
 
     @classmethod
     def get_conditions(cls) -> [callable]:
-        attrs = cls.__get_attributes()
+        attrs = cls.get_attributes()
         return [v.condition for v in attrs.values()]

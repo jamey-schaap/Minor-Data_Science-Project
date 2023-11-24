@@ -4,7 +4,7 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.metrics import classification_report
 from imblearn.over_sampling import RandomOverSampler
 import numpy as np
-
+from configs.enums import Column, RiskClassifications
 
 def scale_dataset(dataframe: pd.DataFrame, oversample: bool = False):
     # if target column is the last value
@@ -52,12 +52,27 @@ def scale_dataset(dataframe: pd.DataFrame, oversample: bool = False):
 #   - Numerical value (see Ordinal data) for each category in the machine learning/ algorithm dataset
 
 
+def split_data(dataframe: pd.DataFrame):
+    data_by_risk = [dataframe[dataframe["country_risk"] == v] for v in RiskClassifications.get_values()]
+    split_data = [
+        # Train (60%), validation (20%) and test (20%) datasets
+        np.split(sd.sample(frac=1, random_state=0), [int(0.6 * len(sd)), int(0.8 * len(sd))])
+        for sd
+        in data_by_risk
+    ]
+
+    train = pd.concat([row[0] for row in split_data])
+    valid = pd.concat([row[1] for row in split_data])
+    test = pd.concat([row[2] for row in split_data])
+
+    return train, valid, test
+
+
 def main():
     print("Loading dataset...")
     df = pd.read_excel(MACHINE_LEARNING_DATASET_PATH)
 
-    # Train (60%), validation (20%) and test (20%) datasets
-    train, valid, test = np.split(df.sample(frac=1), [int(0.6 * len(df)), int(0.8 * len(df))])
+    train, valid, test = split_data(df)
 
     train, X_train, y_train = scale_dataset(train, oversample=True)
     valid, X_valid, y_valid = scale_dataset(valid, oversample=False)

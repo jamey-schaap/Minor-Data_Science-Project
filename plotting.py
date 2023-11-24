@@ -22,9 +22,6 @@ def main() -> None:
     print("Loading dataset...")
     df = pd.read_excel(MERGED_DATASET_PATH)
 
-    from configs.enums import RiskClassifications, RiskClassification
-    test = RiskClassifications.get_conditions()
-
     print("Plotting...")
     simple_invoke(df, x=Column.DUR, y=Prefix.NORM + Column.RISK, plot_func=gf.plot_kde)
 

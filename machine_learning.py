@@ -8,18 +8,18 @@ from configs.enums import Column, RiskClassifications
 
 def scale_dataset(dataframe: pd.DataFrame, oversample: bool = False):
     # if target column is the last value
-    X = dataframe[dataframe.columns[:-1]].values
+    x = dataframe[dataframe.columns[:-1]].values
     y = dataframe[dataframe.columns[-1]].values
 
     scaler = StandardScaler()
-    X = scaler.fit_transform(X)
+    x = scaler.fit_transform(x)
 
     if oversample:
         ros = RandomOverSampler()
-        X, y = ros.fit_resample(X, y)
+        x, y = ros.fit_resample(x, y)
 
-    data = np.hstack((X, np.reshape(y, (-1, 1))))
-    return data, X, y
+    data = np.hstack((x, np.reshape(y, (-1, 1))))
+    return data, x, y
 
 
 # Feature vector
@@ -84,24 +84,23 @@ def main():
     y_pred = knn_model.predict(X_test)
     print(classification_report(y_test, y_pred))
 
-    from sklearn.linear_model import LogisticRegression
-    lg_model = LogisticRegression()
-    lg_model.fit(X_train, y_train)
-    y_pred = lg_model.predict(X_test)
-    print(classification_report(y_test, y_pred))
-
-    from sklearn.svm import SVC
-    svm_model = SVC()
-    svm_model.fit(X_train, y_train)
-    y_pred = svm_model.predict(X_test)
-    print(classification_report(y_test, y_pred))
-
-    from sklearn.ensemble import RandomForestClassifier
-    rf_model = RandomForestClassifier(n_estimators=1000, random_state=42)
-    rf_model.fit(X_train, y_train)
-    y_pred = rf_model.predict(X_test)
-    print(classification_report(y_test, y_pred))
-
+    # from sklearn.linear_model import LogisticRegression
+    # lg_model = LogisticRegression()
+    # lg_model.fit(X_train, y_train)
+    # y_pred = lg_model.predict(X_test)
+    # print(classification_report(y_test, y_pred))
+    #
+    # from sklearn.svm import SVC
+    # svm_model = SVC()
+    # svm_model.fit(X_train, y_train)
+    # y_pred = svm_model.predict(X_test)
+    # print(classification_report(y_test, y_pred))
+    #
+    # from sklearn.ensemble import RandomForestClassifier
+    # rf_model = RandomForestClassifier(n_estimators=1000, random_state=42)
+    # rf_model.fit(X_train, y_train)
+    # y_pred = rf_model.predict(X_test)
+    # print(classification_report(y_test, y_pred))
 
 
 if __name__ == "__main__":

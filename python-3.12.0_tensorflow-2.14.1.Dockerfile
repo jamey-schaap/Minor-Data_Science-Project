@@ -5,10 +5,7 @@ WORKDIR /app
 
 RUN mkdir -p ./out
 
-COPY ./datasets/MachineLearning-Dataset-V1.xlsx ./
-COPY neural-network.ipynb ./
-COPY ./requirements.txt ./
-COPY ./configs/enums.py ./configs/enums.py
+COPY ./ ./
 
 RUN pip install -r requirements.txt
 

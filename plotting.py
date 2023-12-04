@@ -1,7 +1,7 @@
 import pandas as pd
 from modules import graph_functions as gf
 from configs.enums import Column, Prefix, Description
-from configs.data import MERGED_DATASET_PATH
+from configs.data import MERGED_DATASET_PATH, MACHINE_LEARNING_DATASET_PATH
 from typing import Callable
 
 

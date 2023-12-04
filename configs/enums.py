@@ -51,6 +51,7 @@ class Description(StrEnum):
     DUR = "Years since regime change"
     NORM_RISK = "Risk factor (0..1, double)"
     POL2 = "Polity 2 score (-10..10, integer)"
+    GOV_INSTABILITY = "Government Instability (TBA)"
 
 
 class RiskClassification:
@@ -81,9 +82,9 @@ class RiskClassifications(object):
     # high = RiskClassification("high", 3, 0.5, 0.75)
     # critical = RiskClassification("critical", 4, 0.75, 1)
 
-    low = RiskClassification("low", 1, -0.1, 0.333333)
-    medium = RiskClassification("medium", 2, 0.333333, 0.666666)
-    high = RiskClassification("high", 3, 0.666666, 1)
+    low = RiskClassification("low", 0, -0.1, 0.333333)
+    medium = RiskClassification("medium", 1, 0.333333, 0.666666)
+    high = RiskClassification("high", 2, 0.666666, 1)
 
     @classmethod
     def get_attributes(cls) -> dict:

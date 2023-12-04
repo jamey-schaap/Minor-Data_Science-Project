@@ -1,13 +1,23 @@
 version: 1.0.0
 services:
-  tensorflow:
-    container_name: ds-project-tensorflow
-    image: ds-project-tensorflow:latest
+  tensorflow-2131:
+    container_name: ds-project-tensorflow-2131
+    image: ds-project-tensorflow:2131-latest
     build:
       context: ./
-      dockerfile: Dockerfile
+      dockerfile: python-3.11.6_tensorflow-2.13.1.Dockerfile
     volumes:
-      - ./out:/app/out:rw
-      - ./neural-network.ipynb:/app/neural-network.ipynb:rw
+      - ./:/app/:rw
+    ports:
+      - 8888:8888
+
+  tensorflow-2141:
+    container_name: ds-project-tensorflow-2141
+    image: ds-project-tensorflow:2141-latest
+    build:
+      context: ./
+      dockerfile: python-3.12.0_tensorflow-2.14.1.Dockerfile
+    volumes:
+      - ./:/app/:rw
     ports:
       - 8888:8888

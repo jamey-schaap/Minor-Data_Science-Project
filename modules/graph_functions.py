@@ -260,3 +260,4 @@ def plot_kde(
     _set_labels_plt(x_label, y_label)
     plt.tight_layout()
     plt.show()
+

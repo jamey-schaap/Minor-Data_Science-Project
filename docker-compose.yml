@@ -1,22 +1,22 @@
 version: 1.0.0
 services:
-  tensorflow-2131:
-    container_name: ds-project-tensorflow-2131
-    image: ds-project-tensorflow:2131-latest
+  tensorflow-2140:
+    container_name: ds-project-tensorflow-2140
+    image: ds-project-tensorflow:2140-latest
     build:
       context: ./
-      dockerfile: python-3.11.6_tensorflow-2.13.1.Dockerfile
+      dockerfile: python-3.11.6_tensorflow-2.14.0.Dockerfile
     volumes:
       - ./:/app/:rw
     ports:
       - 8888:8888
 
-  tensorflow-2141:
-    container_name: ds-project-tensorflow-2141
-    image: ds-project-tensorflow:2141-latest
+  tensorflow-2150:
+    container_name: ds-project-tensorflow-2150
+    image: ds-project-tensorflow:2150-latest
     build:
       context: ./
-      dockerfile: python-3.12.0_tensorflow-2.14.1.Dockerfile
+      dockerfile: python-3.11.0rc1_tensorflow-2.15.0.Dockerfile
     volumes:
       - ./:/app/:rw
     ports:

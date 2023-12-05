@@ -3,11 +3,12 @@ from tensorflow.keras.layers import Dense
 from tensorflow.keras.layers import Dropout
 from tensorflow.keras.optimizers import Adam
 from tensorflow.keras.callbacks import EarlyStopping
-from machine_learning.neural_networks.utils import get_last_layer_units_and_activation, plot_history
+from machine_learning.neural_networks.utils import get_last_layer_units_and_activation, plot_history, get_tensorflow_version
 from machine_learning.utils import split_data, scale_dataset
 import numpy as np
 from sklearn.metrics import classification_report
 import os
+from typing import Optional
 
 def ann_model(units, dropout_rate, input_shape, num_classes):
     op_units, op_activation = get_last_layer_units_and_activation(num_classes)
@@ -29,6 +30,7 @@ def train_ann_model(dataframe,
                     dropout_rate=0.2,
                     patience=2,
                     verbose=2,
+                    file_name: Optional[str] = None,
                     disable_save=False,
                     disable_plot_history=False,
                     disable_print_report=False):
@@ -92,6 +94,9 @@ def train_ann_model(dataframe,
 
     # Save model.
     if not disable_save:
+        # tf-version_Optimizer_units_dropout_learning-rate_epochs
+        file_name = f"tf-{get_tensorflow_version()}_Adam_{units}_{dropout_rate}_{learning_rate}_{epochs}.keras" if file_name is None else file_name
         model.save(os.path.join(os.environ["OUTPUT_PATH"], "ann_model.keras"))
+        print(f"Model has been saved as '{file_name}'")
 
     return model, history["val_acc"][-1], history["val_loss"][-1]

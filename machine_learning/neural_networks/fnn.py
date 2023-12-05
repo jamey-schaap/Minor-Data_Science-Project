@@ -3,11 +3,12 @@ from tensorflow.keras.layers import Dense
 from tensorflow.keras.layers import Dropout
 from tensorflow.keras.optimizers import Adam
 from tensorflow.keras.callbacks import EarlyStopping
-from machine_learning.neural_networks.utils import get_last_layer_units_and_activation, plot_history
+from machine_learning.neural_networks.utils import get_last_layer_units_and_activation, plot_history, get_tensorflow_version
 from machine_learning.utils import split_data, scale_dataset
 import numpy as np
 from sklearn.metrics import classification_report
 import os
+from typing import Optional
 
 def fnn_model(layers, units, dropout_rate, input_shape, num_classes):
     """Creates an instance of a FNN model.
@@ -35,17 +36,18 @@ def fnn_model(layers, units, dropout_rate, input_shape, num_classes):
 
 
 def train_fnn_model(dataframe,
-                    learning_rate=1e-3,
-                    epochs=1000,
-                    batch_size=128,
-                    layers=2,
-                    units=64,
-                    dropout_rate=0.2,
-                    patience=2,
-                    verbose=2,
-                    disable_save=False,
-                    disable_plot_history=False,
-                    disable_print_report=False):
+                    learning_rate: float = 1e-3,
+                    epochs: int = 1000,
+                    batch_size: int = 128,
+                    layers: int = 2,
+                    units: int = 64,
+                    dropout_rate: float = 0.2,
+                    patience: int = 2,
+                    verbose: int = 2,
+                    file_name: Optional[str] = None,
+                    disable_save: bool = False,
+                    disable_plot_history: bool = False,
+                    disable_print_report: bool = False):
     """Trains FNN model on the given dataset.
 
     # Arguments
@@ -121,6 +123,9 @@ def train_fnn_model(dataframe,
 
     # Save model.
     if not disable_save:
-        model.save(os.path.join(os.environ["OUTPUT_PATH"], "fnn_model.keras"))
+        # tf-version_Optimizer_layers_units_dropout_learning-rate_epochs
+        file_name = f"tf-{get_tensorflow_version()}_Adam_{layers}_{units}_{dropout_rate}_{learning_rate}_{epochs}.keras" if file_name is None else file_name
+        model.save(os.path.join(os.environ["OUTPUT_PATH"], file_name))
+        print(f"\nModel has been saved as '{file_name}'")
 
     return model, history["val_acc"][-1], history["val_loss"][-1]

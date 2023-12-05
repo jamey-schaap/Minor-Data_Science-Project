@@ -41,3 +41,7 @@ def get_last_layer_units_and_activation(num_classes: int) -> Tuple[int, str]:
         activation = "softmax"
         units = num_classes
     return units, activation
+
+def get_tensorflow_version() -> str:
+    import tensorflow as tf
+    return tf.__version__

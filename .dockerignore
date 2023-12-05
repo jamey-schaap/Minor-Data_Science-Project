@@ -1,4 +1,6 @@
-.idea
+.idea/
 .gitignore
 venv/
-.git
+.git/
+__pycache__/
+README.md

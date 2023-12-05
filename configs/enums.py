@@ -52,6 +52,8 @@ class Description(StrEnum):
     NORM_RISK = "Risk factor (0..1, double)"
     POL2 = "Polity 2 score (-10..10, integer)"
     GOV_INSTABILITY = "Government Instability (TBA)"
+    IGOV = "General government investment in billions constant dollars (2017)"
+    IPRIV = "Private investment in billions constant dollars (2017)"
 
 
 class RiskClassification:

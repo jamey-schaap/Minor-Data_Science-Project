@@ -145,12 +145,12 @@ def merge_datasets(
     df = df.dropna(subset=drop_na_columns)
     df = df[df[Column.INVEST] != 0]
 
-    log_columns = [Column.GDP_PC, Column.GDP, Column.INVEST]
+    log_columns = [Column.GDP_PC, Column.GDP, Column.INVEST, Column.IGOV, Column.IPRIV, Column.IPPP]
     print(Fore.GREEN + f"Adding Math.Log columns for columns {log_columns}..." + Style.RESET_ALL)
     df = reduce(log_column, log_columns, df)
 
     columns_to_normalize = [Column.DUR, Column.GDP_PC, Column.GDP_PC_GR, Column.GDP, Column.POL2, Column.INVEST,
-                            Column.GOV_INSTABILITY]
+                            Column.GOV_INSTABILITY, Column.IGOV, Column.IPRIV, Column.IPPP]
     columns_to_normalize += map(lambda s: f"log_{s}", log_columns)
     print(
         Fore.GREEN + f"Adding normalized columns (min: {A}, max: {B}) for columns {columns_to_normalize}..." + Style.RESET_ALL)
@@ -160,9 +160,16 @@ def merge_datasets(
         Fore.GREEN + f"Adding risk columns: {Column.INVEST_RISK}, {Column.POL_RISK}, {Column.RISK} and {Prefix.NORM + Column.RISK}..." + Style.RESET_ALL)
     df[Column.INVEST_RISK] = -(df[Prefix.NORM_LOG + Column.GDP_PC] + df[Prefix.NORM_LOG + Column.GDP] + df[
         Prefix.NORM_LOG + Column.INVEST])
+
+    ### Formula testing
+    # df[Column.INVEST_RISK] = -(df[Prefix.NORM_LOG + Column.GDP_PC] + df[Prefix.NORM_LOG + Column.GDP] + df[
+    #     Prefix.NORM_LOG + Column.IGOV] + df[Prefix.NORM_LOG + Column.IPRIV] + df[Prefix.NORM_LOG + Column.IPPP])
+    # Column.IGOV, Column.IPRIV, Column.IPPP
+
     df[Column.POL_RISK] = -((abs(df[Column.POL2]) / 10) + df[Prefix.NORM + Column.DUR] - (df[Column.FRAG] / 3) - (
         df[Prefix.NORM + Column.GOV_INSTABILITY]))
     df[Column.RISK] = df[Column.INVEST_RISK] + df[Column.POL_RISK]
+    # scew by ... 4.7 * 1.064
     df = normalize_column(df, Column.RISK)
 
     country_risk_options = RiskClassifications.get_names()
@@ -170,8 +177,6 @@ def merge_datasets(
     print(Fore.GREEN + f"Categorizing {norm_risk} into {country_risk_options}" + Style.RESET_ALL)
     country_risk_conditions = [f(df[norm_risk]) for f in RiskClassifications.get_conditions()]
     df[Column.COUNTRY_RISK] = np.select(country_risk_conditions, country_risk_options)
-
-    # TODO: Estimate empty values
 
     print(Fore.GREEN + f"Exporting to {MERGED_DATASET_PATH}" + Style.RESET_ALL)
     with tqdm(total=1, ncols=100) as pbar:
@@ -190,7 +195,16 @@ def merge_datasets(
 def create_machine_learning_dataset(df: pd.DataFrame) -> pd.DataFrame:
     print(Fore.BLUE + "Creating machine learning dataset..." + Style.RESET_ALL)
 
-    features = [Column.POL2, Column.DUR, Column.FRAG, Column.GOV_INSTABILITY, Column.GDP, Column.GDP_PC, Column.IGOV,
+    ### Formula testing
+    # features = [Column.POL2, Prefix.NORM + Column.DUR, Column.FRAG, Prefix.NORM + Column.GOV_INSTABILITY, Prefix.NORM_LOG + Column.GDP, Prefix.NORM_LOG + Column.GDP_PC, Prefix.NORM_LOG + Column.IGOV,
+    #             Prefix.NORM_LOG + Column.IPRIV, Prefix.NORM_LOG + Column.IPPP]
+    # print(Fore.GREEN + f"Filtering columns to features: {features}" + Style.RESET_ALL)
+    # ml_df = df.loc[:, features]
+    # ml_df[Column.POL2] = abs(ml_df[Column.POL2]) / 10
+    # ml_df[Column.FRAG] = ml_df[Column.FRAG] / 3
+
+    features = [Column.POL2, Column.DUR, Column.FRAG, Column.GOV_INSTABILITY,
+                Column.GDP, Column.GDP_PC, Column.IGOV,
                 Column.IPRIV, Column.IPPP]
     print(Fore.GREEN + f"Filtering columns to features: {features}" + Style.RESET_ALL)
     ml_df = df.loc[:, features]

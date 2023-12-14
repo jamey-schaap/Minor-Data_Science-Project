@@ -2,7 +2,7 @@
 
 ## Requirements
 
-Python `>= 3.12.0`<br/>
+Python `3.11.x`<br/>
 
 ## Setting up
 
@@ -34,6 +34,4 @@ Unix: `source env/bin/activate` <br/>
 PowerShell (PWSH) (Core): `venv\Scripts\Activate.ps1`<br/>
 Command Prompt (CMD): `venv\Scripts\activate.bat`
 
-## Tensorflow with Docker and Jupyter
-Run `docker compose up [-d]` to create and start the Docker container. The Jupyter server can be reached on `https://127.0.0.1:8888`, enter `1hoQyxpr5x9Wpy2MIJlN` in the password/token field to gain access. Pycharm can connect to the Jupyter server with the following URL: `http://127.0.0.1:8888/?token=1hoQyxpr5x9Wpy2MIJlN`.
 

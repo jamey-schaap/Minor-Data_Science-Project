@@ -163,6 +163,7 @@ cython_debug/
 datasets/MergedDataset-*.*
 datasets/MachineLearning-Dataset-*.*
 datasets/~$*.*
+out/~$*.*
 out/*.png
 out/*.jpg
 

@@ -9,6 +9,7 @@ import numpy as np
 from sklearn.metrics import classification_report
 import os
 from typing import Optional
+from configs.data import MODELS_PATH
 
 def ann_model(units, dropout_rate, input_shape, num_classes):
     op_units, op_activation = get_last_layer_units_and_activation(num_classes)
@@ -95,8 +96,8 @@ def train_ann_model(dataframe,
     # Save model.
     if not disable_save:
         # tf-version_Optimizer_units_dropout_learning-rate_epochs
-        file_name = f"tf-{get_tensorflow_version()}_Adam_{units}_{dropout_rate}_{learning_rate}_{epochs}.ann.keras" if file_name is None else file_name
-        model.save(os.path.join(os.environ["OUTPUT_PATH"], "ann_model.keras"))
+        file_name = f"tf-{get_tensorflow_version()}_Shallow_Adam_{units}_{dropout_rate}_{learning_rate}_{epochs}.ann.keras" if file_name is None else file_name
+        model.save(os.path.join(MODELS_PATH, "ann_model.keras"))
         print(f"Model has been saved as '{file_name}'")
 
     return model, history

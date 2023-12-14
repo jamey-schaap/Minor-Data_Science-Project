@@ -1,16 +1,18 @@
 from tensorflow.keras import models
-from tensorflow.keras.layers import Dense
-from tensorflow.keras.layers import Dropout
+from tensorflow.keras.layers import Dense, Dropout
 from tensorflow.keras.optimizers import Adam
-from tensorflow.keras.callbacks import EarlyStopping
+from tensorflow.keras.callbacks import EarlyStopping, LearningRateScheduler
 from machine_learning.neural_networks.utils import get_last_layer_units_and_activation, plot_history, get_tensorflow_version
 from machine_learning.utils import split_data, scale_dataset
 import numpy as np
 from sklearn.metrics import classification_report
 import os
 from typing import Optional
+from machine_learning.neural_networks.learning_rate_schedulers import *
+from configs.data import MODELS_PATH
 
-def fnn_model(layers, units, dropout_rate, input_shape, num_classes):
+
+def deep_fnn_model(layers: int, units:int, dropout_rate:float, input_shape:int, num_classes:int):
     """Creates an instance of a FNN model.
 
     # Arguments
@@ -27,27 +29,28 @@ def fnn_model(layers, units, dropout_rate, input_shape, num_classes):
     model = models.Sequential()
     model.add(Dropout(rate=dropout_rate, input_shape=input_shape))
 
+    # funs = ["gelu", "gelu", "gelu", "gelu", "gelu", "gelu", "gelu", "gelu"]
     for _ in range(layers-1):
-        model.add(Dense(units=units, activation="relu"))
+        model.add(Dense(units=units, activation="gelu"))
         model.add(Dropout(rate=dropout_rate))
 
     model.add(Dense(units=op_units, activation=op_activation))
     return model
 
 
-def train_fnn_model(dataframe,
-                    learning_rate: float = 1e-3,
-                    epochs: int = 1000,
-                    batch_size: int = 128,
-                    layers: int = 2,
-                    units: int = 64,
-                    dropout_rate: float = 0.2,
-                    patience: int = 2,
-                    verbose: int = 2,
-                    file_name: Optional[str] = None,
-                    disable_save: bool = False,
-                    disable_plot_history: bool = False,
-                    disable_print_report: bool = False):
+def train_deep_fnn_model(dataframe,
+                         learning_rate: float = 1e-3,
+                         epochs: int = 1000,
+                         batch_size: int = 128,
+                         layers: int = 2,
+                         units: int = 64,
+                         dropout_rate: float = 0.2,
+                         patience: int = 2,
+                         verbose: int = 2,
+                         file_name: Optional[str] = None,
+                         disable_save: bool = False,
+                         disable_plot_history: bool = False,
+                         disable_print_report: bool = False):
     """Trains FNN model on the given dataset.
 
     # Arguments
@@ -81,11 +84,11 @@ def train_fnn_model(dataframe,
             unexpected_labels=unexpected_labels))
 
     # Create model instance.
-    model = fnn_model(layers=layers,
-                      units=units,
-                      dropout_rate=dropout_rate,
-                      input_shape=x_train.shape[1:],
-                      num_classes=num_classes)
+    model = deep_fnn_model(layers=layers,
+                           units=units,
+                           dropout_rate=dropout_rate,
+                           input_shape=x_train.shape[1:],
+                           num_classes=num_classes)
 
     # Compile model with learning parameters.
     if num_classes == 2:
@@ -96,8 +99,10 @@ def train_fnn_model(dataframe,
     model.compile(optimizer=optimizer, loss=loss, metrics=["acc"])
 
     # Create callback for early stopping on validation loss.
-    callbacks = [EarlyStopping(
-        monitor="val_loss", patience=patience)]
+    callbacks = [
+        EarlyStopping(monitor="val_loss", patience=patience),
+        # LearningRateScheduler(FactorScheduler(factor=0.995, stop_factor=0.00075, base_lr=0.002))
+    ]
 
     # Train and validate model.
     history = model.fit(
@@ -124,8 +129,8 @@ def train_fnn_model(dataframe,
     # Save model.
     if not disable_save:
         # tf-version_Optimizer_layers_units_dropout_learning-rate_epochs
-        file_name = f"tf-{get_tensorflow_version()}_Adam_{layers}_{units}_{dropout_rate}_{learning_rate}_{epochs}.fnn.keras" if file_name is None else file_name
-        model.save(os.path.join(os.environ["OUTPUT_PATH"], file_name))
+        file_name = f"tf-{get_tensorflow_version()}_Deep_Adam_{layers}_{units}_{dropout_rate}_{learning_rate}_{epochs}.fnn.keras" if file_name is None else file_name
+        model.save(os.path.join(MODELS_PATH, file_name))
         print(f"\nModel has been saved as '{file_name}'")
 
     return model, history, num_classes

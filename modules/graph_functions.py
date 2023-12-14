@@ -192,9 +192,26 @@ def plot_normal_distribution(
     axes = Axes.create(df=df, x=x)
     cf.set_styling()
 
-    mean = x.mean()
+    mu = x.mean()
     sd = x.std()
-    plt.plot(x, sc.norm.pdf(axes.x, mean, sd), label=f"μ: {mean}, σ: {sd}")
+    plt.plot(x, sc.norm.pdf(axes.x, mean, sd), label=f"μ: {mu:.2f}, σ: {sd:.2f}")
+
+    _set_labels_plt(x_label)
+    plt.legend()
+    plt.tight_layout()
+    plt.show()
+
+
+def plot_hist(
+        x: str | pd.Series,
+        df: pd.DataFrame | None = None,
+        x_label: str | None = None) -> None:
+    axes = Axes.create(df=df, x=x)
+    cf.set_styling()
+
+    mu = x.mean()
+    sd = x.std()
+    sns.histplot(x, label=f"μ: {mu:.2f}, σ: {sd:.2f}")
 
     _set_labels_plt(x_label)
     plt.legend()

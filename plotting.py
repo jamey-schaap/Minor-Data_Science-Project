@@ -1,3 +1,4 @@
+import matplotlib.pyplot as plt
 import pandas as pd
 from modules import graph_functions as gf
 from configs.enums import Column, Prefix, Description
@@ -23,7 +24,8 @@ def main() -> None:
     df = pd.read_excel(MERGED_DATASET_PATH)
 
     print("Plotting...")
-    simple_invoke(df, x=Column.DUR, y=Prefix.NORM + Column.RISK, plot_func=gf.plot_kde)
+    # simple_invoke(df, x=Column.DUR, y=Prefix.NORM + Column.RISK, plot_func=gf.plot_kde)
+    gf.plot_hist(df["norm_risk"], x_label="Risk factor (0..1)")
 
 
 if __name__ == '__main__':

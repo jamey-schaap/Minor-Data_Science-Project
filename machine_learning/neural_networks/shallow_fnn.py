@@ -1,17 +1,21 @@
 from tensorflow.keras import models
 from tensorflow.keras.layers import Dense
 from tensorflow.keras.layers import Dropout
-from tensorflow.keras.optimizers import Adam
+from tensorflow.keras.optimizers import Adam, SGD
 from tensorflow.keras.callbacks import EarlyStopping
-from machine_learning.neural_networks.utils import get_last_layer_units_and_activation, plot_history, get_tensorflow_version
+from machine_learning.neural_networks.utils import get_last_layer_units_and_activation, plot_history
 from machine_learning.utils import split_data, scale_dataset
 import numpy as np
 from sklearn.metrics import classification_report
 import os
 from typing import Optional
-from configs.data import MODELS_PATH
+from configs.data import MODELS_PATH, VERSION
 
-def ann_model(units, dropout_rate, input_shape, num_classes):
+def shallow_fnn_model(
+        units: int,
+        dropout_rate: float,
+        input_shape: int,
+        num_classes: int):
     op_units, op_activation = get_last_layer_units_and_activation(num_classes)
 
     model = models.Sequential()
@@ -23,18 +27,24 @@ def ann_model(units, dropout_rate, input_shape, num_classes):
     return model
 
 
-def train_ann_model(dataframe,
-                    learning_rate=1e-3,
-                    epochs=1000,
-                    batch_size=128,
-                    units=64,
-                    dropout_rate=0.2,
-                    patience=2,
-                    verbose=2,
-                    file_name: Optional[str] = None,
-                    disable_save=False,
-                    disable_plot_history=False,
-                    disable_print_report=False):
+def train_shallow_fnn_model(dataframe,
+                            learning_rate: float = 1e-3,
+                            epsilon: float = 1e-07,
+                            beta_1: float = 0.9,
+                            beta_2: float = 0.999,
+                            weight_decay: Optional[float] = None,
+                            clipnorm: Optional[float] = None,
+                            clipvalue: Optional[float] = None,
+                            epochs: int = 1000,
+                            batch_size: int = 128,
+                            units: int = 64,
+                            dropout_rate: float = 0.2,
+                            patience: int = 2,
+                            verbose: int = 2,
+                            file_name: Optional[str] = None,
+                            disable_save: bool = False,
+                            disable_plot_history: bool = False,
+                            disable_print_report: bool = False):
     # Get the data.
     train, valid, test = split_data(dataframe)
 
@@ -53,7 +63,7 @@ def train_ann_model(dataframe,
             unexpected_labels=unexpected_labels))
 
     # Create model instance.
-    model = ann_model(
+    model = shallow_fnn_model(
         units=units,
         dropout_rate=dropout_rate,
         input_shape=x_train.shape[1:],
@@ -64,12 +74,21 @@ def train_ann_model(dataframe,
         loss = "binary_crossentropy"
     else:
         loss = "sparse_categorical_crossentropy"
-    optimizer = Adam(learning_rate=learning_rate)
+    optimizer = Adam(
+        learning_rate=learning_rate,
+        beta_1=beta_1,
+        beta_2=beta_2,
+        weight_decay=weight_decay,
+        epsilon=epsilon,
+        clipnorm=clipnorm,
+        clipvalue=clipvalue)
     model.compile(optimizer=optimizer, loss=loss, metrics=["acc"])
 
     # Create callback for early stopping on validation loss.
-    callbacks = [EarlyStopping(
-        monitor="val_loss", patience=patience)]
+    callbacks = [
+        EarlyStopping(monitor="val_loss", patience=patience),
+        # LearningRateScheduler(FactorScheduler(factor=0.995, stop_factor=0.00075, base_lr=0.002))
+    ]
 
     # Train and validate model.
     history = model.fit(
@@ -96,8 +115,8 @@ def train_ann_model(dataframe,
     # Save model.
     if not disable_save:
         # tf-version_Optimizer_units_dropout_learning-rate_epochs
-        file_name = f"tf-{get_tensorflow_version()}_Shallow_Adam_{units}_{dropout_rate}_{learning_rate}_{epochs}.ann.keras" if file_name is None else file_name
+        file_name = f"{VERSION}_Adam_{units}_{dropout_rate}_{learning_rate}_{epochs}.shallow_fnn.keras" if file_name is None else file_name
         model.save(os.path.join(MODELS_PATH, "ann_model.keras"))
         print(f"Model has been saved as '{file_name}'")
 
-    return model, history
+    return model, history, num_classes

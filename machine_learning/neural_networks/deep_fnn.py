@@ -2,17 +2,22 @@ from tensorflow.keras import models
 from tensorflow.keras.layers import Dense, Dropout
 from tensorflow.keras.optimizers import Adam
 from tensorflow.keras.callbacks import EarlyStopping, LearningRateScheduler
-from machine_learning.neural_networks.utils import get_last_layer_units_and_activation, plot_history, get_tensorflow_version
+from machine_learning.neural_networks.utils import get_last_layer_units_and_activation, plot_history
 from machine_learning.utils import split_data, scale_dataset
 import numpy as np
 from sklearn.metrics import classification_report
 import os
 from typing import Optional
 from machine_learning.neural_networks.learning_rate_schedulers import *
-from configs.data import MODELS_PATH
+from configs.data import MODELS_PATH, VERSION
 
 
-def deep_fnn_model(layers: int, units:int, dropout_rate:float, input_shape:int, num_classes:int):
+def deep_fnn_model(
+        layers: int,
+        units: int,
+        dropout_rate: float,
+        input_shape: int,
+        num_classes: int):
     """Creates an instance of a FNN model.
 
     # Arguments
@@ -31,7 +36,7 @@ def deep_fnn_model(layers: int, units:int, dropout_rate:float, input_shape:int, 
 
     # funs = ["gelu", "gelu", "gelu", "gelu", "gelu", "gelu", "gelu", "gelu"]
     for _ in range(layers-1):
-        model.add(Dense(units=units, activation="gelu"))
+        model.add(Dense(units=units, activation="relu"))
         model.add(Dropout(rate=dropout_rate))
 
     model.add(Dense(units=op_units, activation=op_activation))
@@ -40,6 +45,12 @@ def deep_fnn_model(layers: int, units:int, dropout_rate:float, input_shape:int, 
 
 def train_deep_fnn_model(dataframe,
                          learning_rate: float = 1e-3,
+                         epsilon: float = 1e-07,
+                         beta_1: float = 0.9,
+                         beta_2: float = 0.999,
+                         weight_decay: Optional[float] = None,
+                         clipnorm: Optional[float] = None,
+                         clipvalue: Optional[float] = None,
                          epochs: int = 1000,
                          batch_size: int = 128,
                          layers: int = 2,
@@ -84,18 +95,26 @@ def train_deep_fnn_model(dataframe,
             unexpected_labels=unexpected_labels))
 
     # Create model instance.
-    model = deep_fnn_model(layers=layers,
-                           units=units,
-                           dropout_rate=dropout_rate,
-                           input_shape=x_train.shape[1:],
-                           num_classes=num_classes)
+    model = deep_fnn_model(
+        layers=layers,
+        units=units,
+        dropout_rate=dropout_rate,
+        input_shape=x_train.shape[1:],
+        num_classes=num_classes)
 
     # Compile model with learning parameters.
     if num_classes == 2:
         loss = "binary_crossentropy"
     else:
         loss = "sparse_categorical_crossentropy"
-    optimizer = Adam(learning_rate=learning_rate)
+    optimizer = Adam(
+        learning_rate=learning_rate,
+        beta_1=beta_1,
+        beta_2=beta_2,
+        weight_decay=weight_decay,
+        epsilon=epsilon,
+        clipnorm=clipnorm,
+        clipvalue=clipvalue)
     model.compile(optimizer=optimizer, loss=loss, metrics=["acc"])
 
     # Create callback for early stopping on validation loss.
@@ -129,7 +148,7 @@ def train_deep_fnn_model(dataframe,
     # Save model.
     if not disable_save:
         # tf-version_Optimizer_layers_units_dropout_learning-rate_epochs
-        file_name = f"tf-{get_tensorflow_version()}_Deep_Adam_{layers}_{units}_{dropout_rate}_{learning_rate}_{epochs}.fnn.keras" if file_name is None else file_name
+        file_name = f"{VERSION()}_Adam_{layers}_{units}_{dropout_rate}_{learning_rate}_{epochs}.deep_fnn.keras" if file_name is None else file_name
         model.save(os.path.join(MODELS_PATH, file_name))
         print(f"\nModel has been saved as '{file_name}'")
 

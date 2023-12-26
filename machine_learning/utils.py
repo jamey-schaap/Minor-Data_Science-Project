@@ -1,13 +1,13 @@
 import pandas as pd
 import numpy as np
-from configs.enums import RiskClassifications
+from configs.enums import RISKCLASSIFICATIONS
 from typing import Tuple, Any
 from sklearn.preprocessing import StandardScaler
 from imblearn.over_sampling import RandomOverSampler
 
 
 def split_data(dataframe: pd.DataFrame) -> Tuple[np.array, np.array, np.array]:
-    data_by_risk = [dataframe[dataframe["country_risk"] == v] for v in RiskClassifications.get_values()]
+    data_by_risk = [dataframe[dataframe["country_risk"] == v] for v in RISKCLASSIFICATIONS.get_values()]
     split_data = [
         # Train (60%), validation (20%) and test (20%) datasets
         np.split(sd.sample(frac=1, random_state=0), [int(0.6 * len(sd)), int(0.8 * len(sd))])

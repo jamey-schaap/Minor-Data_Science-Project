@@ -1,5 +1,6 @@
 from enum import StrEnum, Enum
 import pandas as pd
+import itertools
 
 # https://stackoverflow.com/questions/33690064/dynamically-create-an-enum-with-custom-values-in-python
 
@@ -62,7 +63,7 @@ class RiskClassification:
         self.value = value
 
         if lower_bound > upper_bound:
-            raise Exception("lower_bound should be smaller or equal to upper_bound")
+            raise Exception(f"lower_bound [{lower_bound}] should be smaller or equal to upper_bound [{upper_bound}]")
 
         self.lower_bound = lower_bound
         self.upper_bound = upper_bound
@@ -71,38 +72,38 @@ class RiskClassification:
         return ((ser > self.lower_bound) & (ser <= self.upper_bound))
 
 
-class RiskClassifications(object):
-    # -0.1 to include a perfect score of 0
+class RiskClassifications:
+    def __init__(self, classifications: [RiskClassification]):
+        for c in classifications:
+            self.__dict__[c.name] = c
 
-    # low = RiskClassification("low", 1, -0.1, 0.39)
-    # medium = RiskClassification("medium", 2, 0.39, 0.69)
-    # high = RiskClassification("high", 3, 0.69, 0.89)
-    # critical = RiskClassification("critical", 4, 0.89, 1)
+    def get_attributes(self) -> dict:
+        return {x: v for x, v in vars(self).items() if type(v) is RiskClassification}
 
-    # low = RiskClassification("low", 1, -0.1, 0.25)
-    # medium = RiskClassification("medium", 2, 0.25, 0.5)
-    # high = RiskClassification("high", 3, 0.5, 0.75)
-    # critical = RiskClassification("critical", 4, 0.75, 1)
-
-    low = RiskClassification("low", 0, -0.1, 0.333333)
-    medium = RiskClassification("medium", 1, 0.333333, 0.666666)
-    high = RiskClassification("high", 2, 0.666666, 1)
-
-    @classmethod
-    def get_attributes(cls) -> dict:
-        return {x: v for x, v in vars(cls).items() if type(v) is RiskClassification}
-
-    @classmethod
-    def get_names(cls) -> [str]:
-        attrs = cls.get_attributes()
+    def get_names(self) -> [str]:
+        attrs = self.get_attributes()
         return [v.name for v in attrs.values()]
 
-    @classmethod
-    def get_values(cls) -> [str]:
-        attrs = cls.get_attributes()
+    def get_values(self) -> [str]:
+        attrs = self.get_attributes()
         return [v.value for v in attrs.values()]
 
-    @classmethod
-    def get_conditions(cls) -> [callable]:
-        attrs = cls.get_attributes()
+    def get_conditions(self) -> [callable]:
+        attrs = self.get_attributes()
         return [v.condition for v in attrs.values()]
+
+
+__amount_of_classes = 9
+__step = 1 / __amount_of_classes
+__names_cart_product = itertools.product(["low", "medium", "high"], range(0, __amount_of_classes // 3))
+__names = [l + f"_{r}" for l, r in __names_cart_product]
+__classifications = [
+    RiskClassification(name=name, value=value, lower_bound=value * __step, upper_bound=(value+1) * __step)
+    for name, value
+    in zip(__names, range(0, __amount_of_classes))]
+
+RISKCLASSIFICATIONS = RiskClassifications(__classifications)
+
+
+def get_amount_of_classes():
+    return __amount_of_classes

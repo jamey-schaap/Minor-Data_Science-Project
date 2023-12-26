@@ -169,13 +169,13 @@ def merge_datasets(
     df[Column.POL_RISK] = -((abs(df[Column.POL2]) / 10) + df[Prefix.NORM + Column.DUR] - (df[Column.FRAG] / 3) - (
         df[Prefix.NORM + Column.GOV_INSTABILITY]))
     df[Column.RISK] = df[Column.INVEST_RISK] + df[Column.POL_RISK]
-    # scew by ... 4.7 * 1.064
+
     df = normalize_column(df, Column.RISK)
 
-    country_risk_options = RiskClassifications.get_names()
+    country_risk_options = RISKCLASSIFICATIONS.get_names()
     norm_risk = Prefix.NORM + Column.RISK
     print(Fore.GREEN + f"Categorizing {norm_risk} into {country_risk_options}" + Style.RESET_ALL)
-    country_risk_conditions = [f(df[norm_risk]) for f in RiskClassifications.get_conditions()]
+    country_risk_conditions = [f(df[norm_risk]) for f in RISKCLASSIFICATIONS.get_conditions()]
     df[Column.COUNTRY_RISK] = np.select(country_risk_conditions, country_risk_options)
 
     print(Fore.GREEN + f"Exporting to {MERGED_DATASET_PATH}" + Style.RESET_ALL)
@@ -195,14 +195,6 @@ def merge_datasets(
 def create_machine_learning_dataset(df: pd.DataFrame) -> pd.DataFrame:
     print(Fore.BLUE + "Creating machine learning dataset..." + Style.RESET_ALL)
 
-    ### Formula testing
-    # features = [Column.POL2, Prefix.NORM + Column.DUR, Column.FRAG, Prefix.NORM + Column.GOV_INSTABILITY, Prefix.NORM_LOG + Column.GDP, Prefix.NORM_LOG + Column.GDP_PC, Prefix.NORM_LOG + Column.IGOV,
-    #             Prefix.NORM_LOG + Column.IPRIV, Prefix.NORM_LOG + Column.IPPP]
-    # print(Fore.GREEN + f"Filtering columns to features: {features}" + Style.RESET_ALL)
-    # ml_df = df.loc[:, features]
-    # ml_df[Column.POL2] = abs(ml_df[Column.POL2]) / 10
-    # ml_df[Column.FRAG] = ml_df[Column.FRAG] / 3
-
     features = [Column.POL2, Column.DUR, Column.FRAG, Column.GOV_INSTABILITY,
                 Column.GDP, Column.GDP_PC, Column.IGOV,
                 Column.IPRIV, Column.IPPP]
@@ -216,9 +208,9 @@ def create_machine_learning_dataset(df: pd.DataFrame) -> pd.DataFrame:
             return x == v
         return wrapper
 
-    name_equality_funcs = [equality_hof(x) for x in RiskClassifications.get_names()]
+    name_equality_funcs = [equality_hof(x) for x in RISKCLASSIFICATIONS.get_names()]
     country_risk_conditions = [f(df[Column.COUNTRY_RISK]) for f in name_equality_funcs]
-    country_risk_values = RiskClassifications.get_values()
+    country_risk_values = RISKCLASSIFICATIONS.get_values()
     ml_df[Column.COUNTRY_RISK] = np.select(country_risk_conditions, country_risk_values)
 
     print(Fore.GREEN + f"Exporting to {MACHINE_LEARNING_DATASET_PATH}" + Style.RESET_ALL)

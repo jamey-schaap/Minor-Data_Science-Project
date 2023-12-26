@@ -45,8 +45,8 @@ def log_column(df: pd.DataFrame, column_name: str) -> pd.DataFrame:
         for x in result_df[column_name]]
     return result_df
 
-
-def calculate_from_prev_row[T](calculation: Callable[[Row, Row], T]) -> Callable[[Row, Row], Optional[T]]:
+# def calculate_from_prev_row(calculation: Callable[[Row, Row], T]) -> Callable[[Row, Row], Optional[T]]:
+def calculate_from_prev_row(calculation):
     def wrapper(prev_row: Row, cur_row: Row):
         if cur_row.country == prev_row.country and cur_row.year - 1 == prev_row.year:
             return calculation(prev_row, cur_row)

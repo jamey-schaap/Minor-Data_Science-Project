@@ -3,7 +3,7 @@ pandas==2.1.4
 tensorflow==2.15.0
 shap==0.44.0
 xlrd==2.0.1
-openpyxl==openpyxl-3.1.2
+openpyxl==3.1.2
 numpy==1.26.2
 seaborn==0.13.0
 colorama==0.4.6

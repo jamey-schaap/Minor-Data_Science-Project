@@ -148,7 +148,7 @@ def train_deep_fnn_model(dataframe,
     # Save model.
     if not disable_save:
         # tf-version_Optimizer_layers_units_dropout_learning-rate_epochs
-        file_name = f"{VERSION()}_Adam_{layers}_{units}_{dropout_rate}_{learning_rate}_{epochs}.deep_fnn.keras" if file_name is None else file_name
+        file_name = f"{VERSION}_Adam_{layers}_{units}_{dropout_rate}_{learning_rate}_{epochs}.deep_fnn.keras" if file_name is None else file_name
         model.save(os.path.join(MODELS_PATH, file_name))
         print(f"\nModel has been saved as '{file_name}'")
 

@@ -2,20 +2,21 @@ from tensorflow.keras import models
 from tensorflow.keras.layers import Dense
 from tensorflow.keras.layers import Dropout
 from tensorflow.keras.optimizers import Adam, SGD
-from tensorflow.keras.callbacks import EarlyStopping
+from tensorflow.keras.callbacks import EarlyStopping, LearningRateScheduler, History
 from machine_learning.neural_networks.utils import get_last_layer_units_and_activation, plot_history
 from machine_learning.utils import split_data, scale_dataset
 import numpy as np
 from sklearn.metrics import classification_report
 import os
-from typing import Optional
+from typing import Optional, Callable
 from configs.data import MODELS_PATH, VERSION
+
 
 def shallow_fnn_model(
         units: int,
         dropout_rate: float,
         input_shape: int,
-        num_classes: int):
+        num_classes: int) -> models.Sequential:
     op_units, op_activation = get_last_layer_units_and_activation(num_classes)
 
     model = models.Sequential()
@@ -28,7 +29,7 @@ def shallow_fnn_model(
 
 
 def train_shallow_fnn_model(dataframe,
-                            learning_rate: float = 1e-3,
+                            learning_rate: float | Callable[[int], float] = 1e-3,
                             epsilon: float = 1e-07,
                             beta_1: float = 0.9,
                             beta_2: float = 0.999,
@@ -44,7 +45,7 @@ def train_shallow_fnn_model(dataframe,
                             file_name: Optional[str] = None,
                             disable_save: bool = False,
                             disable_plot_history: bool = False,
-                            disable_print_report: bool = False):
+                            disable_print_report: bool = False) -> [models.Sequential, History, int]:
     # Get the data.
     train, valid, test = split_data(dataframe)
 
@@ -74,21 +75,44 @@ def train_shallow_fnn_model(dataframe,
         loss = "binary_crossentropy"
     else:
         loss = "sparse_categorical_crossentropy"
-    optimizer = Adam(
-        learning_rate=learning_rate,
-        beta_1=beta_1,
-        beta_2=beta_2,
-        weight_decay=weight_decay,
-        epsilon=epsilon,
-        clipnorm=clipnorm,
-        clipvalue=clipvalue)
-    model.compile(optimizer=optimizer, loss=loss, metrics=["acc"])
 
-    # Create callback for early stopping on validation loss.
-    callbacks = [
-        EarlyStopping(monitor="val_loss", patience=patience),
-        # LearningRateScheduler(FactorScheduler(factor=0.995, stop_factor=0.00075, base_lr=0.002))
-    ]
+    if isinstance(learning_rate, float) or isinstance(learning_rate, int):
+        optimizer = Adam(
+            learning_rate=learning_rate,
+            beta_1=beta_1,
+            beta_2=beta_2,
+            weight_decay=weight_decay,
+            epsilon=epsilon,
+            clipnorm=clipnorm,
+            clipvalue=clipvalue)
+
+        # Create callback for early stopping on validation loss.
+        callbacks = [
+            EarlyStopping(monitor="val_loss", patience=patience),
+        ]
+
+    else:
+        optimizer = Adam(
+            beta_1=beta_1,
+            beta_2=beta_2,
+            weight_decay=weight_decay,
+            epsilon=epsilon,
+            clipnorm=clipnorm,
+            clipvalue=clipvalue)
+
+        # Create callback for early stopping on validation loss.
+        callbacks = [
+            EarlyStopping(monitor="val_loss", patience=patience),
+            LearningRateScheduler(learning_rate)
+        ]
+
+        # # Create callback for early stopping on validation loss.
+        # callbacks = [
+        #     EarlyStopping(monitor="val_loss", patience=patience),
+        #     # LearningRateScheduler(FactorScheduler(factor=0.995, stop_factor=0.00075, base_lr=0.002))
+        # ]
+
+    model.compile(optimizer=optimizer, loss=loss, metrics=["acc"])
 
     # Train and validate model.
     history = model.fit(

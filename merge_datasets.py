@@ -160,12 +160,6 @@ def merge_datasets(
         Fore.GREEN + f"Adding risk columns: {Column.INVEST_RISK}, {Column.POL_RISK}, {Column.RISK} and {Prefix.NORM + Column.RISK}..." + Style.RESET_ALL)
     df[Column.INVEST_RISK] = -(df[Prefix.NORM_LOG + Column.GDP_PC] + df[Prefix.NORM_LOG + Column.GDP] + df[
         Prefix.NORM_LOG + Column.INVEST])
-
-    ### Formula testing
-    # df[Column.INVEST_RISK] = -(df[Prefix.NORM_LOG + Column.GDP_PC] + df[Prefix.NORM_LOG + Column.GDP] + df[
-    #     Prefix.NORM_LOG + Column.IGOV] + df[Prefix.NORM_LOG + Column.IPRIV] + df[Prefix.NORM_LOG + Column.IPPP])
-    # Column.IGOV, Column.IPRIV, Column.IPPP
-
     df[Column.POL_RISK] = -((abs(df[Column.POL2]) / 10) + df[Prefix.NORM + Column.DUR] - (df[Column.FRAG] / 3) - (
         df[Prefix.NORM + Column.GOV_INSTABILITY]))
     df[Column.RISK] = df[Column.INVEST_RISK] + df[Column.POL_RISK]

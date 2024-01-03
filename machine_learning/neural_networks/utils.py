@@ -16,12 +16,14 @@ def plot_history(history, num_classes: int) -> None:
     else:
         ax1.set_ylabel("Sparse categorical crossentropy")
     ax1.grid(True)
+    ax1.legend()
 
     ax2.plot(history["acc"], label="accuracy")
     ax2.plot(history["val_acc"], label="val_accuracy")
     ax2.set_xlabel("Epoch")
     ax2.set_ylabel("Accuracy")
     ax2.grid(True)
+    ax2.legend()
 
     plt.show()
 

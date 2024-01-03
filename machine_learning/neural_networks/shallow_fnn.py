@@ -106,12 +106,6 @@ def train_shallow_fnn_model(dataframe,
             LearningRateScheduler(learning_rate)
         ]
 
-        # # Create callback for early stopping on validation loss.
-        # callbacks = [
-        #     EarlyStopping(monitor="val_loss", patience=patience),
-        #     # LearningRateScheduler(FactorScheduler(factor=0.995, stop_factor=0.00075, base_lr=0.002))
-        # ]
-
     model.compile(optimizer=optimizer, loss=loss, metrics=["acc"])
 
     # Train and validate model.

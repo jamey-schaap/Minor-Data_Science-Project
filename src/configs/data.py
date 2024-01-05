@@ -2,8 +2,9 @@ import os.path
 from src.configs.enums import get_amount_of_classes
 
 # Paths
-_datasets_path = "datasets"
-_out_path = "out"
+_project_dir = ".."
+_datasets_path = os.path.join(_project_dir, "datasets")
+_out_path = os.path.join(_project_dir, "out")
 
 # configs\data.py; line 96; __amount_of_classes
 VERSION = f"RawData.{get_amount_of_classes()}c"

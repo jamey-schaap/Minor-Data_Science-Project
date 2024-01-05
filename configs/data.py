@@ -5,6 +5,7 @@ from configs.enums import get_amount_of_classes
 _datasets_path = "datasets"
 _out_path = "out"
 
+# configs\data.py; line 96; __amount_of_classes
 VERSION = f"RawData.{get_amount_of_classes()}c"
 
 DATASETS_PATH = os.path.join(os.getcwd(), _datasets_path)

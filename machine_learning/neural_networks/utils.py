@@ -1,6 +1,7 @@
 import matplotlib.pyplot as plt
 from typing import Tuple
 
+
 def plot_history(history, num_classes: int) -> None:
     """
      # Arguments
@@ -27,6 +28,7 @@ def plot_history(history, num_classes: int) -> None:
 
     plt.show()
 
+
 def get_last_layer_units_and_activation(num_classes: int) -> Tuple[int, str]:
     """Gets the # units and activation function for the last network layer.
 
@@ -43,6 +45,7 @@ def get_last_layer_units_and_activation(num_classes: int) -> Tuple[int, str]:
         activation = "softmax"
         units = num_classes
     return units, activation
+
 
 def get_tensorflow_version() -> str:
     import tensorflow as tf

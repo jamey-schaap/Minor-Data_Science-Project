@@ -94,9 +94,11 @@ class RiskClassifications:
 
 
 __amount_of_classes = 9
+__class_names = ["low", "medium", "high"]
+
 __step = 1 / __amount_of_classes
-__names_cart_product = itertools.product(["low", "medium", "high"], range(0, __amount_of_classes // 3))
-__names = [l + f"_{r}" for l, r in __names_cart_product]
+__names_cart_product = itertools.product(__class_names, range(0, __amount_of_classes // len(__class_names)))
+__names = [f"{l}_{r}" for l, r in __names_cart_product]
 __classifications = [
     RiskClassification(name=name, value=value, lower_bound=value * __step, upper_bound=(value+1) * __step)
     for name, value

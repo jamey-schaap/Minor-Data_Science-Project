@@ -244,6 +244,7 @@ def plot_3d_scatter(
 
 def plot_pairs(df: pd.DataFrame) -> None:
     sns.pairplot(df)
+    cf.set_styling()
     plt.show()
 
 

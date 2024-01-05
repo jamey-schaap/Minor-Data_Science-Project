@@ -160,10 +160,10 @@ cython_debug/
 .idea/
 
 # Do not store intermediate datasets in Github.
-datasets/MergedDataset-*.*
-datasets/MachineLearning-Dataset-*.*
-datasets/~$*.*
-out/~$*.*
+src/datasets/MergedDataset-*.*
+src/datasets/MachineLearning-Dataset-*.*
+src/datasets/~$*.*
+src/out/~$*.*
 out/*.png
 out/*.jpg
 

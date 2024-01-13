@@ -8,7 +8,7 @@ import tensorflow as tf
 from src.configs.enums import Column, RISKCLASSIFICATIONS
 
 
-def plot_history(history: tf.keras.history, num_classes: int) -> None:
+def plot_history(history: tf.keras.callbacks.History, num_classes: int) -> None:
     """
     Plots the history of a given tensorflow.keras model.
     :param history: tf.keras.history, The history of a tensorflow.keras model.

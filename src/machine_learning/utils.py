@@ -51,7 +51,7 @@ def get_distribution(
     return distribution
 
 
-def __get_patch_xy(patch: plt.patches.Rectangle) -> Tuple[float, float]:
+def __get_patch_xy(patch) -> Tuple[float, float]:
     """
     Gets the x y coordinates of a given patch.
     :param patch: matplotlib.patches.Rectangle, A plt.barplot patch.

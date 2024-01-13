@@ -13,13 +13,24 @@ def shallow_fnn_model(
         dropout_rate: float,
         input_shape: int,
         num_classes: int) -> tf.keras.models.Sequential:
+    """Creates an instance of a shallow FNN model.
+
+    # Arguments
+        units: int, output dimension of the layers.
+        dropout_rate: float, percentage of input to drop at Dropout layers.
+        input_shape: tuple, shape of input to the model.
+        num_classes: int, number of output classes.
+
+    # Returns
+        A shallow FNN model instance.
+    """
     op_units, op_activation = get_last_layer_units_and_activation(num_classes)
 
     model = tf.keras.models.Sequential()
-    model.add(tf.keras.Dropout(rate=dropout_rate, input_shape=input_shape))
-    model.add(tf.keras.Dense(units=units, activation="relu"))
-    model.add(tf.keras.Dropout(rate=dropout_rate))
-    model.add(tf.keras.Dense(units=op_units, activation=op_activation))
+    model.add(tf.keras.layers.Dropout(rate=dropout_rate, input_shape=input_shape))
+    model.add(tf.keras.layers.Dense(units=units, activation="relu"))
+    model.add(tf.keras.layers.Dropout(rate=dropout_rate))
+    model.add(tf.keras.layers.Dense(units=op_units, activation=op_activation))
 
     return model
 
@@ -41,7 +52,24 @@ def train_shallow_fnn_model(dataframe,
                             file_name: Optional[str] = None,
                             disable_save: bool = False,
                             disable_plot_history: bool = False,
-                            disable_print_report: bool = False) -> [tf.keras.models.Sequential, tf.keras.History, int]:
+                            disable_print_report: bool = False):
+    """Trains shallow FNN model on the given dataset.
+
+    # Arguments
+        dataframe: pandas dataframe containing train, test and validation data.
+        learning_rate: float, learning rate for training model.
+        epochs: int, number of epochs.
+        batch_size: int, number of samples per batch.
+        layers: int, number of `Dense` layers in the model.
+        units: int, output dimension of Dense layers in the model.
+        dropout_rate: float: percentage of input to drop at Dropout layers.
+
+    # Raises
+        ValueError: If validation data has label values which were not seen
+            in the training data.
+
+    :return: [tf.models.Sequential, tf.keras.History, int]
+    """
     # Get the data.
     train, valid, test = split_data(dataframe)
 
@@ -73,7 +101,7 @@ def train_shallow_fnn_model(dataframe,
         loss = "sparse_categorical_crossentropy"
 
     if isinstance(learning_rate, float) or isinstance(learning_rate, int):
-        optimizer = tf.keras.Adam(
+        optimizer = tf.keras.optimizers.Adam(
             learning_rate=learning_rate,
             beta_1=beta_1,
             beta_2=beta_2,
@@ -84,11 +112,11 @@ def train_shallow_fnn_model(dataframe,
 
         # Create callback for early stopping on validation loss.
         callbacks = [
-            tf.keras.EarlyStopping(monitor="val_loss", patience=patience),
+            tf.keras.callbacks.EarlyStopping(monitor="val_loss", patience=patience),
         ]
 
     else:
-        optimizer = tf.keras.Adam(
+        optimizer = tf.keras.optimizers.Adam(
             beta_1=beta_1,
             beta_2=beta_2,
             weight_decay=weight_decay,
@@ -98,8 +126,8 @@ def train_shallow_fnn_model(dataframe,
 
         # Create callback for early stopping on validation loss.
         callbacks = [
-            tf.keras.EarlyStopping(monitor="val_loss", patience=patience),
-            tf.keras.LearningRateScheduler(learning_rate)
+            tf.keras.callbacks.EarlyStopping(monitor="val_loss", patience=patience),
+            tf.keras.callbacks.LearningRateScheduler(learning_rate)
         ]
 
     model.compile(optimizer=optimizer, loss=loss, metrics=["acc"])

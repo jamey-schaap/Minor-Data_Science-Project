@@ -1,7 +1,8 @@
+from __future__ import annotations
 from enum import StrEnum, Enum
 import pandas as pd
 import itertools
-from __future__ import annotations
+
 
 class Column(StrEnum):
     """

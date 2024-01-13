@@ -13,6 +13,7 @@ def merge_datasets(
         economic_df: pd.DataFrame,
         population_df: pd.DataFrame,
         continent_df: pd.DataFrame) -> pd.DataFrame:
+    """Creates the merged/pre-processed dataset."""
     print(Fore.BLUE + "Merging datasets..." + Style.RESET_ALL)
 
     print(Fore.GREEN + "Selecting rows where (1960 <= year <= 2018)..." + Style.RESET_ALL)
@@ -146,7 +147,7 @@ def merge_datasets(
 
     log_columns = [Column.GDP_PC, Column.GDP, Column.INVEST, Column.IGOV, Column.IPRIV, Column.IPPP]
     print(Fore.GREEN + f"Adding Math.Log columns for columns {log_columns}..." + Style.RESET_ALL)
-    df = reduce(log_column, log_columns, df)
+    df = reduce(log10_column, log_columns, df)
 
     columns_to_normalize = [Column.DUR, Column.GDP_PC, Column.GDP_PC_GR, Column.GDP, Column.POL2, Column.INVEST,
                             Column.GOV_INSTABILITY, Column.IGOV, Column.IPRIV, Column.IPPP]
@@ -186,6 +187,7 @@ def merge_datasets(
 
 
 def create_machine_learning_dataset(df: pd.DataFrame) -> pd.DataFrame:
+    """Creates the machine learning dataset."""
     print(Fore.BLUE + "Creating machine learning dataset..." + Style.RESET_ALL)
 
     features = [Column.POL2, Column.DUR, Column.FRAG, Column.GOV_INSTABILITY,

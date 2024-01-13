@@ -15,12 +15,18 @@ import src.configs.plotting as cf
 
 @dataclass
 class Axes:
+    """An error handling structure, which returns an Axes object if the given parameters were valid."""
     x: pd.Series
     y: pd.Series | None = None
     z: pd.Series | None = None
 
     @staticmethod
-    def from_dict(data: dict):
+    def from_dict(data: dict) -> Axes:
+        """
+        Creates an Axes object from a given dict.
+        :param data: dict, Containing the x, y and z keys.
+        :return: Axes, An Axes object.
+        """
         x = data["x"] if "x" in data.keys() else None
         y = data["y"] if "y" in data.keys() else None
         z = data["z"] if "z" in data.keys() else None
@@ -34,6 +40,15 @@ class Axes:
             df: pd.DataFrame | None = None,
             y_required: bool = False,
             z_required: bool = False) -> Axes:
+        """
+        :param x: str | pd.Series, A column name or pandas.Series of what should to be plotted.
+        :param y: str | pd.Series | None, A column name or pandas.Series (or undefined) of what should to be plotted. .
+        :param z: str | pd.Series | None, A column name or pandas.Series (or undefined) of what should to be plotted. .
+        :param df: pd.DataFrame | None, A pandas.Series (or undefined) of what should to be plotted. .
+        :param y_required: bool = False, A toggle which specifies if y is required.
+        :param z_required: bool = False, A toggle which specifies if z is required.
+        :return: Axes, An Axes object.
+        """
         func_args = locals()
         func_args = {k: v for k, v in func_args.items() if v is not None and k in ("x", "y", "z")}
 
@@ -68,6 +83,11 @@ class Axes:
 def _set_labels_plt(
         x_label: str | None = None,
         y_label: str | None = None) -> None:
+    """
+    Sets the matplotlib labels.
+    :param x_label: str | None, The x label.
+    :param y_label: str | None, The y label.
+    """
     if x_label is not None:
         plt.xlabel(x_label)
     if y_label is not None:
@@ -79,6 +99,12 @@ def _set_labels_ax3d(
         x_label: str | None = None,
         y_label: str | None = None,
         z_label: str | None = None) -> None:
+    """
+   Sets the Axes3D labels.
+   :param x_label: str | None, The value of the x label.
+   :param y_label: str | None, The value of the y label.
+   :param z_label: str | None, The value of the z label.
+   """
     if x_label is not None:
         ax.set_xlabel(x_label)
     if y_label is not None:
@@ -88,6 +114,11 @@ def _set_labels_ax3d(
 
 
 def _add_corr_r2_legend(r_sqr: float, r_value: float) -> None:
+    """
+    Adds a legend containing the r-squared and Pears. Coeff values.
+    :param r_sqr: float, R-squared.
+    :param r_value: float, R-value | Pears. Coeff.
+    """
     r_sqr_patch = mpatches.Patch(label=f"R-squared: {round(r_sqr, 3)}", color="none")
     coeff_patch = mpatches.Patch(label=f"Pear. Coeff: {round(r_value, 3)}", color="none")
     legend = plt.legend(handles=[r_sqr_patch, coeff_patch])
@@ -106,6 +137,14 @@ def plot_linear(
         df: pd.DataFrame | None = None,
         x_label: str | None = None,
         y_label: str | None = None) -> None:
+    """
+    Plots a linear regression.
+    :param x: str | pd.Series, Either the column name or the column for the x value.
+    :param y: str | pd.Series, Either the column name or the column for the y value.
+    :param df: None | pd.Series, Either the dataframe which will be plotted or undefined.
+    :param x_label: str | None, The value of the x label.
+    :param y_label: str | None, The value of the y label.
+    """
     axes = Axes.create(df=df, x=x, y=y, y_required=True)
     cf.set_styling()
 
@@ -126,6 +165,14 @@ def plot_exponential(
         df: pd.DataFrame | None = None,
         x_label: str | None = None,
         y_label: str | None = None) -> None:
+    """
+    Plots an exponential regression.
+    :param x: str | pd.Series, Either the column name or the column for the x value.
+    :param y: str | pd.Series, Either the column name or the column for the y value.
+    :param df: None | pd.Series, Either the dataframe which will be plotted or undefined.
+    :param x_label: str | None, The value of the x label.
+    :param y_label: str | None, The value of the y label.
+    """
     axes = Axes.create(df=df, x=x, y=y, y_required=True)
     cf.set_styling()
 
@@ -143,6 +190,14 @@ def plot_logarithmic(
         df: pd.DataFrame | None = None,
         x_label: str | None = None,
         y_label: str | None = None) -> None:
+    """
+    Plots a logarithmic regression.
+    :param x: str | pd.Series, Either the column name or the column for the x value.
+    :param y: str | pd.Series, Either the column name or the column for the y value.
+    :param df: None | pd.Series, Either the dataframe which will be plotted or undefined.
+    :param x_label: str | None, The value of the x label.
+    :param y_label: str | None, The value of the y label.
+    """
     axes = Axes.create(df=df, x=x, y=y, y_required=True)
     cf.set_styling()
 
@@ -161,6 +216,14 @@ def plot_polynomial(
         df: pd.DataFrame | None = None,
         x_label: str | None = None,
         y_label: str | None = None) -> None:
+    """
+    Plots a polynomial regression.
+    :param x: str | pd.Series, Either the column name or the column for the x value.
+    :param y: str | pd.Series, Either the column name or the column for the y value.
+    :param df: None | pd.Series, Either the dataframe which will be plotted or undefined.
+    :param x_label: str | None, The value of the x label.
+    :param y_label: str | None, The value of the y label.
+    """
     axes = Axes.create(df=df, x=x, y=y, y_required=True)
     cf.set_styling()
 
@@ -189,6 +252,12 @@ def plot_normal_distribution(
         x: str | pd.Series,
         df: pd.DataFrame | None = None,
         x_label: str | None = None) -> None:
+    """
+    Plots a normal distribution.
+    :param x: str | pd.Series, Either the column name or the column for the x value.
+    :param df: None | pd.Series, Either the dataframe which will be plotted or undefined.
+    :param x_label: str | None, The value of the x label.
+    """
     axes = Axes.create(df=df, x=x)
     cf.set_styling()
 
@@ -206,6 +275,12 @@ def plot_hist(
         x: str | pd.Series,
         df: pd.DataFrame | None = None,
         x_label: str | None = None) -> None:
+    """
+    Plots a histogram.
+    :param x: str | pd.Series, Either the column name or the column for the x value.
+    :param df: None | pd.Series, Either the dataframe which will be plotted or undefined.
+    :param x_label: str | None, The value of the x label.
+    """
     axes = Axes.create(df=df, x=x)
     cf.set_styling()
 
@@ -224,6 +299,13 @@ def plot_bar(
         y: str | pd.Series,
         df: pd.DataFrame | None = None,
         x_label: str | None = None) -> None:
+    """
+    Plots a bar plot.
+    :param x: str | pd.Series, Either the column name or the column for the x value.
+    :param y: str | pd.Series, Either the column name or the column for the y value.
+    :param df: None | pd.Series, Either the dataframe which will be plotted or undefined.
+    :param x_label: str | None, The value of the x label.
+    """
     axes = Axes.create(df=df, x=x, y=y)
     cf.set_styling()
 
@@ -242,6 +324,16 @@ def plot_3d_scatter(
         x_label: str | None = None,
         y_label: str | None = None,
         z_label: str | None = None) -> None:
+    """
+    Plots a 3D scatter plot.
+    :param x: str | pd.Series, Either the column name or the column for the x value.
+    :param y: str | pd.Series, Either the column name or the column for the y value.
+    :param z: str | pd.Series, Either the column name or the column for the z value.
+    :param df: None | pd.Series, Either the dataframe which will be plotted or undefined.
+    :param x_label: str | None, The value of the x label.
+    :param y_label: str | None, The value of the y label.
+    :param z_label: str | None, The value of the z label.
+    """
     axes = Axes.create(df=df, x=x, y=y, z=z, y_required=True, z_required=True)
     cf.set_styling()
 
@@ -258,6 +350,10 @@ def plot_3d_scatter(
 
 
 def plot_pairs(df: pd.DataFrame) -> None:
+    """
+    Plots a pair plot.
+    :param df: None | pd.Series, Either the dataframe which will be plotted or undefined.
+    """
     sns.pairplot(df)
     cf.set_styling()
     plt.show()
@@ -270,14 +366,12 @@ def plot_kde(
         x_label: str | None = None,
         y_label: str | None = None) -> None:
     """
-    A kernel density estimate (KDE) plot is a method for visualizing the distribution of observations in a dataset,
-    analogous to a histogram. KDE represents the data using a continuous probability density curve in one or more
-    dimensions.
-
-    Relative to a histogram, KDE can produce a plot that is less cluttered and more interpretable, especially when
-    drawing multiple distributions. But it has the potential to introduce distortions if the underlying distribution
-    is bounded or not smooth. Like a histogram, the quality of the representation also depends on the selection of
-    good smoothing parameters.
+    Plots a KDE plot.
+    :param x: str | pd.Series, Either the column name or the column for the x value.
+    :param y: str | pd.Series, Either the column name or the column for the y value.
+    :param df: None | pd.Series, Either the dataframe which will be plotted or undefined.
+    :param x_label: str | None, The value of the x label.
+    :param y_label: str | None, The value of the y label.
     """
     axes = Axes.create(df=df, x=x, y=y, y_required=True)
     cf.set_styling()

@@ -11,6 +11,13 @@ def simple_invoke(
         x: Column | str,
         y: Column | str,
         plot_func: Callable) -> None:
+    """
+    Simplified graph function invoker.
+    :param df: pd.Dataframe, The data to be plotted.
+    :param x: Column | str, The x column to plot.
+    :param y: Column | str, The y column to plot.
+    :param plot_func: Callable, The plot function to call.
+    """
     get_description = lambda s: s.get_description() if type(s) is Column else Description[str.upper(s)]
     plot_func(
         x=df[x],

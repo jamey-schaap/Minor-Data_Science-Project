@@ -1,6 +1,6 @@
 import tensorflow as tf
-from src.machine_learning.neural_networks.utils import get_last_layer_units_and_activation, plot_history
-from src.machine_learning.utils import split_data, scale_dataset
+from src.machine_learning.neural_networks.utils import get_last_layer_units_and_activation, plot_history, split_data
+from src.machine_learning.utils import scale_dataset
 import numpy as np
 from sklearn.metrics import classification_report
 import os

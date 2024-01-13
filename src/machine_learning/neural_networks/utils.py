@@ -1,6 +1,11 @@
 import matplotlib.pyplot as plt
 from typing import Tuple
+
+import numpy as np
+import pandas as pd
 import tensorflow as tf
+
+from src.configs.enums import Column, RISKCLASSIFICATIONS
 
 
 def plot_history(history: tf.keras.history, num_classes: int) -> None:
@@ -54,3 +59,26 @@ def get_tensorflow_version() -> str:
     :return: str, The tensorflow version.
     """
     return tf.__version__
+
+
+def split_data(dataframe: pd.DataFrame) -> Tuple[np.array, np.array, np.array]:
+    """
+    Splits the data into a train, validation and test dataset, where each label/class is spread equally over each
+    dataset.
+    :param dataframe: pandas.Dataframe, The dataframe to split.
+    :return: Tuple[np.array, np.array, np.array], A tuple containing the train, validation and test dataset
+    respectively.
+    """
+    data_by_risk = [dataframe[dataframe[Column.COUNTRY_RISK] == v] for v in RISKCLASSIFICATIONS.get_values()]
+    equally_divided_data = [
+        # Train (60%), validation (20%) and test (20%) datasets
+        np.split(sd.sample(frac=1, random_state=0), [int(0.6 * len(sd)), int(0.8 * len(sd))])
+        for sd
+        in data_by_risk
+    ]
+
+    train = pd.concat([row[0] for row in equally_divided_data])
+    valid = pd.concat([row[1] for row in equally_divided_data])
+    test = pd.concat([row[2] for row in equally_divided_data])
+
+    return train, valid, test

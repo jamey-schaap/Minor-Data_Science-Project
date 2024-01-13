@@ -8,23 +8,39 @@ import matplotlib.pyplot as plt
 
 __PREDICTED_COUNTRY_RISK_COLUMN = "predicted_country_risk"
 
+
 def split_data(dataframe: pd.DataFrame) -> Tuple[np.array, np.array, np.array]:
+    """
+    Splits the data into a train, validation and test dataset, where each label/class is spread equally over each
+    dataset.
+    :param dataframe: pandas.Dataframe, The dataframe to split.
+    :return: Tuple[np.array, np.array, np.array], A tuple containing the train, validation and test dataset
+    respectively.
+    """
     data_by_risk = [dataframe[dataframe[Column.COUNTRY_RISK] == v] for v in RISKCLASSIFICATIONS.get_values()]
-    split_data = [
+    equally_divided_data = [
         # Train (60%), validation (20%) and test (20%) datasets
         np.split(sd.sample(frac=1, random_state=0), [int(0.6 * len(sd)), int(0.8 * len(sd))])
         for sd
         in data_by_risk
     ]
 
-    train = pd.concat([row[0] for row in split_data])
-    valid = pd.concat([row[1] for row in split_data])
-    test = pd.concat([row[2] for row in split_data])
+    train = pd.concat([row[0] for row in equally_divided_data])
+    valid = pd.concat([row[1] for row in equally_divided_data])
+    test = pd.concat([row[2] for row in equally_divided_data])
 
     return train, valid, test
 
 
-def scale_dataset(dataframe: pd.DataFrame, oversample: bool = False) -> Tuple[np.ndarray[Any, np.dtype], np.ndarray, np.ndarray]:
+def scale_dataset(dataframe: pd.DataFrame, oversample: bool = False) \
+        -> Tuple[np.ndarray[Any, np.dtype], np.ndarray, np.ndarray]:
+    """
+    Scales a given dataset.
+    :param dataframe: pandas.Dataframe, A dataframe to sale.
+    :param oversample: bool, A toggle whether to oversample or not.
+    :return: Tuple[np.ndarray[Any, np.dtype], np.ndarray, np.ndarray], A tuple containing the scaled dataset,
+    features and labels
+    """
     # Assuming target column is the last column
     x = dataframe[dataframe.columns[:-1]].values
     y = dataframe[dataframe.columns[-1]].values
@@ -43,6 +59,12 @@ def scale_dataset(dataframe: pd.DataFrame, oversample: bool = False) -> Tuple[np
 def get_distribution(
         test_df: pd.DataFrame,
         y_pred: np.array | List | pd.Series) -> pd.DataFrame:
+    """
+    Gets a dataframe containing the differences between actual and predicted country risks.
+    :param test_df: pandas.Dataframe, The test dataframe, with respect to y_pred.
+    :param y_pred: np.array | List | pandas.Series, The predictions of a given model.
+    :return: pandas.Dataframe, A dataframe containing the differences between actual and predicted country risks.
+    """
     result = test_df.copy()
     result[__PREDICTED_COUNTRY_RISK_COLUMN] = y_pred
 
@@ -52,13 +74,23 @@ def get_distribution(
     return distribution
 
 
-def __get_patch_xy(patch):
+def __get_patch_xy(patch: plt.patches.Rectangle) -> Tuple[float, float]:
+    """
+    Gets the x y coordinates of a given patch.
+    :param patch: matplotlib.patches.Rectangle, A plt.barplot patch.
+    :return: Tuple[float, float], A tuple containing the x y coordinates.
+    """
     x = patch.get_x() + (patch.get_width() / 2.2)
     y = patch.get_height()
     return x, y
 
 
 def plot_distribution(distribution: pd.DataFrame) -> None:
+    """
+    Plots a given distribution.
+    :param distribution: pandas.Dataframe, A dataframe containing the differences between actual and predicted country
+    risks.
+    """
     import matplotlib.patches as mpatches
 
     correct = distribution["difference"] == 0
@@ -103,6 +135,11 @@ def plot_distribution(distribution: pd.DataFrame) -> None:
 
 
 def map_labels_to_names(series: pd.Series) -> pd.Series:
+    """
+    Maps a series of labels/classes to their respective names.
+    :param series: pandas.Dataframe, A series containing labels/classes.
+    :return: pandas.Dataframe, A series containing the names of the given labels/classes.
+    """
     from src.configs.enums import RISKCLASSIFICATIONS
 
     new_series = series.copy()
@@ -117,6 +154,12 @@ def output_incorrectly_predicted_xlsx(
         test_df: pd.DataFrame,
         y_pred: np.array | List | pd.Series,
         model_name: str = "some-model") -> pd.DataFrame:
+    """
+    Outputs a xlsx file containing the incorrectly predicted rows + additional data from the merged dataset.
+    :param test_df: pandas.Dataframe, The test dataframe, with respect to y_pred.
+    :param y_pred: np.array | List | pandas.Series, The predictions of a given model.
+    :param model_name: str, A name that was given to the model.
+    """
     import os
     from src.configs.data import MERGED_DATASET_PATH, OUT_PATH, VERSION
 

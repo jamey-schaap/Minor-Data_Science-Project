@@ -1,7 +1,4 @@
-from tensorflow.keras import models
-from tensorflow.keras.layers import Dense, Dropout
-from tensorflow.keras.optimizers import Adam
-from tensorflow.keras.callbacks import EarlyStopping, LearningRateScheduler, History
+import tensorflow as tf
 from src.machine_learning.neural_networks.utils import get_last_layer_units_and_activation, plot_history
 from src.machine_learning.utils import split_data, scale_dataset
 import numpy as np
@@ -17,7 +14,7 @@ def deep_fnn_model(
         units: int,
         dropout_rate: float,
         input_shape: int,
-        num_classes: int) -> models.Sequential:
+        num_classes: int) -> tf.keras.models.Sequential:
     """Creates an instance of a FNN model.
 
     # Arguments
@@ -31,14 +28,14 @@ def deep_fnn_model(
         A FNN model instance.
     """
     op_units, op_activation = get_last_layer_units_and_activation(num_classes)
-    model = models.Sequential()
-    model.add(Dropout(rate=dropout_rate, input_shape=input_shape))
+    model = tf.keras.models.Sequential()
+    model.add(tf.keras.Dropout(rate=dropout_rate, input_shape=input_shape))
 
     for _ in range(layers-1):
-        model.add(Dense(units=units, activation="relu"))
-        model.add(Dropout(rate=dropout_rate))
+        model.add(tf.keras.Dense(units=units, activation="relu"))
+        model.add(tf.keras.Dropout(rate=dropout_rate))
 
-    model.add(Dense(units=op_units, activation=op_activation))
+    model.add(tf.keras.Dense(units=op_units, activation=op_activation))
     return model
 
 
@@ -60,7 +57,7 @@ def train_deep_fnn_model(dataframe,
                          file_name: Optional[str] = None,
                          disable_save: bool = False,
                          disable_plot_history: bool = False,
-                         disable_print_report: bool = False) -> [models.Sequential, History, int]:
+                         disable_print_report: bool = False) -> [tf.models.Sequential, tf.keras.History, int]:
     """Trains FNN model on the given dataset.
 
     # Arguments
@@ -91,7 +88,7 @@ def train_deep_fnn_model(dataframe,
                          " {unexpected_labels}. Please make sure that the "
                          "labels in the validation set are in the same range "
                          "as training labels.".format(
-            unexpected_labels=unexpected_labels))
+                            unexpected_labels=unexpected_labels))
 
     # Create model instance.
     model = deep_fnn_model(
@@ -108,7 +105,7 @@ def train_deep_fnn_model(dataframe,
         loss = "sparse_categorical_crossentropy"
 
     if isinstance(learning_rate, float) or isinstance(learning_rate, int):
-        optimizer = Adam(
+        optimizer = tf.keras.Adam(
             learning_rate=learning_rate,
             beta_1=beta_1,
             beta_2=beta_2,
@@ -119,11 +116,11 @@ def train_deep_fnn_model(dataframe,
 
         # Create callback for early stopping on validation loss.
         callbacks = [
-            EarlyStopping(monitor="val_loss", patience=patience),
+            tf.keras.EarlyStopping(monitor="val_loss", patience=patience),
         ]
 
     else:
-        optimizer = Adam(
+        optimizer = tf.keras.Adam(
             beta_1=beta_1,
             beta_2=beta_2,
             weight_decay=weight_decay,
@@ -133,7 +130,7 @@ def train_deep_fnn_model(dataframe,
 
         # Create callback for early stopping on validation loss.
         callbacks = [
-            EarlyStopping(monitor="val_loss", patience=patience),
+            tf.keras.EarlyStopping(monitor="val_loss", patience=patience),
             LearningRateScheduler(learning_rate)
         ]
 
@@ -164,7 +161,8 @@ def train_deep_fnn_model(dataframe,
     # Save model.
     if not disable_save:
         # tf-version_Optimizer_layers_units_dropout_learning-rate_epochs
-        file_name = f"{VERSION}_Adam_{layers}_{units}_{dropout_rate}_{learning_rate}_{epochs}.deep_fnn.keras" if file_name is None else file_name
+        file_name = f"{VERSION}_Adam_{layers}_{units}_{dropout_rate}_{learning_rate}_{epochs}.deep_fnn.keras" \
+            if file_name is None else file_name
         model.save(os.path.join(MODELS_PATH, file_name))
         print(f"\nModel has been saved as '{file_name}'")
 

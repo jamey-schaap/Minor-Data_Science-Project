@@ -25,7 +25,7 @@ def main() -> None:
 
     print("Plotting...")
     # simple_invoke(df, x=Column.DUR, y=Prefix.NORM + Column.RISK, plot_func=gf.plot_kde)
-    gf.plot_hist(df["norm_risk"], x_label="Risk factor (0..1)")
+    # gf.plot_hist(df["norm_risk"], x_label="Risk factor (0..1)")
 
 
 if __name__ == '__main__':

@@ -194,7 +194,7 @@ def plot_normal_distribution(
 
     mu = x.mean()
     sd = x.std()
-    plt.plot(x, sc.norm.pdf(axes.x, mean, sd), label=f"μ: {mu:.2f}, σ: {sd:.2f}")
+    plt.plot(x, sc.norm.pdf(axes.x, mu, sd), label=f"μ: {mu:.2f}, σ: {sd:.2f}")
 
     _set_labels_plt(x_label)
     plt.legend()
@@ -211,10 +211,25 @@ def plot_hist(
 
     mu = x.mean()
     sd = x.std()
-    sns.histplot(x, label=f"μ: {mu:.2f}, σ: {sd:.2f}")
+    sns.histplot(axes.x, label=f"μ: {mu:.2f}, σ: {sd:.2f}")
 
     _set_labels_plt(x_label)
     plt.legend()
+    plt.tight_layout()
+    plt.show()
+
+
+def plot_bar(
+        x: str | pd.Series,
+        y: str | pd.Series,
+        df: pd.DataFrame | None = None,
+        x_label: str | None = None) -> None:
+    axes = Axes.create(df=df, x=x, y=y)
+    cf.set_styling()
+
+    sns.barplot(x=axes.x, y=axes.y)
+
+    _set_labels_plt(x_label)
     plt.tight_layout()
     plt.show()
 

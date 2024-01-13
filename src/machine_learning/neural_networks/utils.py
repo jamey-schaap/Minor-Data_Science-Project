@@ -1,13 +1,16 @@
 import matplotlib.pyplot as plt
 from typing import Tuple
+import tensorflow as tf
 
 
-def plot_history(history, num_classes: int) -> None:
+def plot_history(history: tf.keras.history, num_classes: int) -> None:
     """
-     # Arguments
-        history: tf.History, the history of a Tensorflow.Keras model.
-        num_classes: int, number of output classes.
+    Plots the history of a given tensorflow.keras model.
+    :param history: tf.keras.history, The history of a tensorflow.keras model.
+    :param num_classes: int, The number of classes/labels.
     """
+
+    # Loss graph
     fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(10, 4))
     ax1.plot(history["loss"], label="loss")
     ax1.plot(history["val_loss"], label="val_loss")
@@ -19,6 +22,7 @@ def plot_history(history, num_classes: int) -> None:
     ax1.grid(True)
     ax1.legend()
 
+    # Accuracy graph
     ax2.plot(history["acc"], label="accuracy")
     ax2.plot(history["val_acc"], label="val_accuracy")
     ax2.set_xlabel("Epoch")
@@ -30,13 +34,10 @@ def plot_history(history, num_classes: int) -> None:
 
 
 def get_last_layer_units_and_activation(num_classes: int) -> Tuple[int, str]:
-    """Gets the # units and activation function for the last network layer.
-
-    # Arguments
-        num_classes: int, number of classes.
-
-    # Returns
-        units, activation values.
+    """
+    Gets the # of units and the activation function for the last network layer.
+    :param num_classes: int, The number of classes/labels.
+    :return: Tuple[int, str], A tuple containing the units and the activation function.
     """
     if num_classes == 2:
         activation = "sigmoid"
@@ -48,5 +49,8 @@ def get_last_layer_units_and_activation(num_classes: int) -> Tuple[int, str]:
 
 
 def get_tensorflow_version() -> str:
-    import tensorflow as tf
+    """
+    Gets the currently used tensorflow version.
+    :return: str, The tensorflow version.
+    """
     return tf.__version__

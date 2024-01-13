@@ -6,6 +6,15 @@ from configs.data import MERGED_DATASET_PATH, MACHINE_LEARNING_DATASET_PATH
 from typing import Callable
 
 
+def get_description(column: str | Column) -> Description | str:
+    try:
+        description = column.get_description() if type(column) is Column else Description[str.upper(column)]
+    except KeyError:
+        description = column
+
+    return description
+
+
 def simple_invoke(
         df: pd.DataFrame,
         x: Column | str,
@@ -18,7 +27,7 @@ def simple_invoke(
     :param y: Column | str, The y column to plot.
     :param plot_func: Callable, The plot function to call.
     """
-    get_description = lambda s: s.get_description() if type(s) is Column else Description[str.upper(s)]
+
     plot_func(
         x=df[x],
         y=df[y],
@@ -31,7 +40,7 @@ def main() -> None:
     df = pd.read_excel(MERGED_DATASET_PATH)
 
     print("Plotting...")
-    # simple_invoke(df, x=Column.DUR, y=Prefix.NORM + Column.RISK, plot_func=gf.plot_kde)
+    simple_invoke(df, x=Column.DUR, y=Prefix.NORM + Column.RISK, plot_func=gf.plot_kde)
     # gf.plot_hist(df["norm_risk"], x_label="Risk factor (0..1)")
 
 

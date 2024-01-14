@@ -1,5 +1,5 @@
 import os.path
-from src.configs.enums import get_amount_of_classes
+from configs.enums import get_amount_of_classes
 
 # Paths
 _project_dir = ".."

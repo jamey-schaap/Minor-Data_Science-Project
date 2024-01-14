@@ -1,11 +1,11 @@
 import tensorflow as tf
-from src.machine_learning.neural_networks.utils import get_last_layer_units_and_activation, plot_history, split_data
-from src.machine_learning.utils import scale_dataset
+from machine_learning.neural_networks.utils import get_last_layer_units_and_activation, plot_history, split_data
+from machine_learning.utils import scale_dataset
 import numpy as np
 from sklearn.metrics import classification_report
 import os
 from typing import Optional, Callable
-from src.configs.data import MODELS_PATH, VERSION
+from configs.data import MODELS_PATH, VERSION
 
 
 def shallow_fnn_model(

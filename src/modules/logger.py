@@ -1,4 +1,4 @@
-from src.configs.data import OUT_PATH
+from configs.data import OUT_PATH
 import os
 
 

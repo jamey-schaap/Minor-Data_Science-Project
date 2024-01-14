@@ -1,6 +1,6 @@
 import pandas as pd
 import numpy as np
-from src.configs.enums import Column, Prefix
+from configs.enums import Column, Prefix
 from typing import Tuple, Any, List
 from sklearn.preprocessing import StandardScaler
 from imblearn.over_sampling import RandomOverSampler

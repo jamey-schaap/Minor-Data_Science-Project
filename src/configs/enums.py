@@ -15,7 +15,7 @@ class Column(StrEnum):
     """
     COUNTRY = "country"
     YEAR = "year"
-    GTYPE = "gov_type"
+    GOV_TYPE = "gov_type"
     POL = "polity"
     POL2 = "polity2"
     DUR = "durable"

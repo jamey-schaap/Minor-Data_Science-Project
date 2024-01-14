@@ -10,7 +10,7 @@ from matplotlib.colors import ListedColormap
 from dataclasses import dataclass
 from sklearn.metrics import r2_score
 import matplotlib.patches as mpatches
-import src.configs.plotting as cf
+import configs.plotting as cf
 
 
 @dataclass

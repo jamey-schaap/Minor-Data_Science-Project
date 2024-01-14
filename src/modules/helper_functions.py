@@ -4,8 +4,8 @@ import numpy as np
 import pandas as pd
 from typing import Optional
 from dataclasses import dataclass
-from src.configs.data import A, B, GOV_INSTABILITY_LOOKBACK_YEARS
-from src.configs.enums import Column, Prefix
+from configs.data import A, B, GOV_INSTABILITY_LOOKBACK_YEARS
+from configs.enums import Column, Prefix
 
 
 @dataclass

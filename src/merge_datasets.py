@@ -87,7 +87,7 @@ def merge_datasets(
         (df[Column.POL2] < -5),
         (df[Column.POL2] >= -5) & (df[Column.POL2] <= 5)]
     gov_options = ["democ", "autoc", "anoc"]
-    df[Column.GTYPE] = np.select(gov_conditions, gov_options)
+    df[Column.GOV_TYPE] = np.select(gov_conditions, gov_options)
 
     print(Fore.GREEN + "Adding column: Population (population)..." + Style.RESET_ALL)
 

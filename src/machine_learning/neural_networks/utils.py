@@ -5,7 +5,7 @@ import numpy as np
 import pandas as pd
 import tensorflow as tf
 
-from src.configs.enums import Column, RISKCLASSIFICATIONS
+from configs.enums import Column, RISKCLASSIFICATIONS
 
 
 def plot_history(history: tf.keras.callbacks.History, num_classes: int) -> None:

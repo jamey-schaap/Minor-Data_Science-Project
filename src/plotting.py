@@ -40,7 +40,7 @@ def main() -> None:
     df = pd.read_excel(MERGED_DATASET_PATH)
 
     print("Plotting...")
-    simple_invoke(df, x=Column.DUR, y=Prefix.NORM + Column.RISK, plot_func=gf.plot_kde)
+    simple_invoke(df, x=Column.POL2, y=Column.DUR, plot_func=gf.plot_linear)
     # gf.plot_hist(df["norm_risk"], x_label="Risk factor (0..1)")
 
 

@@ -117,7 +117,7 @@ shap.summary_plot(shap_values, x_test, feature_names=feature_names,
 ## deep_feed_forward_neural_network.ipynb    ##
 ## shallow_feed_forward_neural_network.ipynb ##
 explainer = shap.KernelExplainer(model.predict, x_train)
-shap_values = explainer.shap_values(shap.sample(x_test, 20), nsamples=100, random_state=41) # default of nsamples = 2 * X.shape[1] + 2048 = 2066 
+shap_values = explainer.shap_values(shap.sample(x_test, 20), nsamples=100, random_state=41)
 
 feature_names = df.columns.tolist()
 feature_names.remove(Column.COUNTRY_RISK)

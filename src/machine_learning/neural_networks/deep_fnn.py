@@ -5,7 +5,7 @@ import numpy as np
 from sklearn.metrics import classification_report
 import os
 from typing import Optional, Callable
-from src.machine_learning.neural_networks.learning_rate_schedulers import *
+from machine_learning.neural_networks.learning_rate_schedulers import *
 from configs.data import MODELS_PATH, VERSION
 
 

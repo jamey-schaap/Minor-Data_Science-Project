@@ -117,7 +117,7 @@ def map_labels_to_names(series: pd.Series) -> pd.Series:
     :param series: pandas.Dataframe, A series containing labels/classes.
     :return: pandas.Dataframe, A series containing the names of the given labels/classes.
     """
-    from src.configs.enums import RISKCLASSIFICATIONS
+    from configs.enums import RISKCLASSIFICATIONS
 
     new_series = series.copy()
     for key, classification in RISKCLASSIFICATIONS.get_attributes().items():
@@ -138,7 +138,7 @@ def output_incorrectly_predicted_xlsx(
     :param model_name: str, A name that was given to the model.
     """
     import os
-    from src.configs.data import MERGED_DATASET_PATH, OUT_PATH, VERSION
+    from configs.data import MERGED_DATASET_PATH, OUT_PATH, VERSION
 
     result = test_df.copy()
     result[__PREDICTED_COUNTRY_RISK_COLUMN] = y_pred

@@ -18,6 +18,8 @@ Python `3.11.x`<br/>
 To set the environment up, start a `Powershell 7 Core` `(PWS)` shell, navigate to the root directory of the project and run the script (`.\simple-setup.ps1`). 
 
 ### Manual steps
+**Note:** A virtual enviroment can also be setup with other tools like Anaconda, but be sure to specify the Python version as 3.11.
+
 Install virtualenv for Python <br/>
 `pip install virtualenv`
 <br/>

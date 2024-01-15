@@ -17,7 +17,7 @@ MERGED_DATASET_PATH = os.path.join(os.getcwd(), _datasets_path, f"MergedDataset-
 MACHINE_LEARNING_DATASET_PATH = os.path.join(os.getcwd(), _datasets_path, f"MachineLearning-Dataset-V.{VERSION}.xlsx")
 
 # Calculation gov_instability
-GOV_INSTABILITY_LOOKBACK_YEARS = 200
+GOV_INSTABILITY_LOOKBACK_YEARS = 60
 
 # Normalization
 A = 0

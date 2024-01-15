@@ -1,7 +1,7 @@
 # Data Science project
 
 ## The best model
-The best model (shallow feed forward network) can be found at `/out/models/best_model`.
+The best model (shallow feed forward network) can be found at `/out/models/best_model`, named `RawData.9c_Adam_1024_0_#FactorScheduler-factor_0.995-stop_factor_0.00075-base_lr_0.00075#_200_25_32_0.19385148584842682.shallow_fnn.keras`. The model's name follows the following naming convention: `{VERSION}_Adam_{units}_{dropoutRate}_{learningRate}_{epochs}_{patience}_{batchsize}_{least_val_loss}.shallow_fnn.keras`. In this case `#FactorScheduler-factor_0.995-stop_factor_0.00075-base_lr_0.00075#` is the learning rate.
 
 ## Datasets
 All used and created datasets can be found at `/datasets`. The following datasets were used while preprocessing and merging the datasets:

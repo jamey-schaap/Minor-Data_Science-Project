@@ -3,6 +3,12 @@
 ## The best model
 The best model (shallow feed forward network) can be found at `/out/models/best_model`.
 
+## Datasets
+All used and created datasets can be found at `/datasets`. The following datasets were used while preprocessing and merging the datasets:
+- `Polity5.xls` - Political data; Provided by the project course of the Data Science minor at Rotterdam University of Applied Sciences (RUAS)
+- `IMFInvestmentandCapitalStockDataset2021.xlsx` - Investment data; Downloaded from International Monetary Fund (IMF); `https://www.imf.org/`
+- `API_SP.POP.TOTL_DS2_en_excel_v2_5871620.xls` - Population per country; Downloaded from the World Bank; `https://www.worldbank.org/`
+
 ## Requirements
 Python `3.11.x`<br/>
 
